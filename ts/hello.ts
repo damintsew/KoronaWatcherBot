@@ -9,7 +9,8 @@ import {NotificationService} from "./dto/NotificationService";
 
 DBConnection.getConnection();
 
-const token = '5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs'
+// const token = '5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs'
+const token = '5311518753:AAE08AaNbFuZ0QPMRD5jkLVeZcMZQ90AqN4' //prod
 if (token === undefined) {
     throw new Error('BOT_TOKEN must be provided!')
 }
