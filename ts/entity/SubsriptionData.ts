@@ -14,6 +14,9 @@ export class SubsriptionData {
     @Column()
     notificationThreshold: number
 
+    @Column({nullable: true, type: "float"})
+    lastNotifiedValue: number
+
     @ManyToOne(() => User)
     user: User
 }
