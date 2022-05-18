@@ -24,6 +24,7 @@ export class NotificationService {
         const subscriptions = await this.getSubscriptions(difference);
         for (let subscription of subscriptions) {
             const text = `Курс изменился. 1$ = ${newValue}`
+            console.log("Sending message to user " + subscription.user.userId)
             this.tg.sendMessage(subscription.user.userId, text)
         }
         this.previousStoredValue = newValue

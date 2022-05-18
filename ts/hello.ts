@@ -6,11 +6,11 @@ import {DBConnection} from "./DBConnection";
 import {SubsriptionData} from "./entity/SubsriptionData";
 import {CronJobService} from "./CronJobService";
 import {NotificationService} from "./dto/NotificationService";
+import {env} from "node:process";
 
 DBConnection.getConnection();
 
-// const token = '5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs'
-const token = '5311518753:AAE08AaNbFuZ0QPMRD5jkLVeZcMZQ90AqN4' //prod
+const token = env.TG_TOKEN  //prod
 if (token === undefined) {
     throw new Error('BOT_TOKEN must be provided!')
 }
@@ -72,7 +72,7 @@ const subscribeWizard = new Scenes.WizardScene<MyContext>(
         await ctx.replyWithMarkdown('В какую страну перевод?',
             Markup.keyboard([
                 Markup.button.callback('➡️ Турция', 'turkey'),
-                Markup.button.callback('➡️ Грузия', 'georgia'),
+                // Markup.button.callback('➡️ Грузия', 'georgia'),
                 Markup.button.callback('➡️ Добавить страну', 'add_country'),
             ]))
         return ctx.wizard.next()
@@ -137,10 +137,11 @@ bot.use(async (ctx, next) => {
 
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
 bot.command('list', (ctx) => ctx.reply("under construction"))
-// bot.command('unsubscribe', (ctx) => ctx.scene.enter('unsubscribe-wizard'))
+bot.command('unsubscribe', (ctx) => ctx.reply("under construction"))
+
 bot.command('help', (ctx) => ctx.reply("/subscribe /list /unsubscribe"))
 bot.command('start', (ctx) => ctx.reply('Привет!\n Я показываю курсы валют в Золотой Короне.\n' +
-    '/subscribe чтобы подписаться на уведомления. /unsubscribe - отписаться. /list показывает активные подписки /help для помощи'));
+    '/subscribe чтобы подписаться на уведомления. \n/unsubscribe - отписаться. \n/list показывает активные подписки \n/help для помощи'));
 
 bot.on('message',
     (ctx) => ctx.reply("Для получения списка команд и моих возможностей введите /help."))

@@ -16,3 +16,4 @@ services:
     image: damintsew/korona-watcher-bot
     environment:
       DB_HOST: postgres
+      TG_TOKEN: "5311518753:AAE08AaNbFuZ0QPMRD5jkLVeZcMZQ90AqN4"

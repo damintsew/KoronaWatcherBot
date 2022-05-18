@@ -6,19 +6,19 @@ export class User {
     @PrimaryColumn()
     userId: number
 
-    @Column()
+    @Column({nullable: true})
     chatId: number
 
-    @Column()
+    @Column({nullable: true})
     firstName: string;
 
-    @Column()
+    @Column({nullable: true})
     lastName: string;
 
-    @Column()
+    @Column({nullable: true})
     username: string;
 
-    @Column()
+    @Column({nullable: true})
     isAdmin: boolean
 
 }

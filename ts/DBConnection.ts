@@ -12,7 +12,7 @@ export class DBConnection {
     static async getConnection(): Promise<Connection> {
         return createConnection({
             type: "postgres",
-            host: "localhost",//env.DB_HOST,
+            host: env.DB_HOST,
             port: 5432,
             username: "postgres",
             password: "changeme",

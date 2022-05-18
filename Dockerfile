@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:17
 
 WORKDIR /usr/koronapay_bot
 
@@ -6,8 +6,7 @@ WORKDIR /usr/koronapay_bot
 COPY package.json .
 COPY tsconfig.json .
 RUN npm install
-RUN npm rebuild node-libcurl --build-from-source
-
+#RUN npm rebuild node-libcurl --build-from-source
 
 
 RUN mkdir ts
