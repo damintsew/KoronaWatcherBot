@@ -11,3 +11,8 @@ services:
 
     ports:
       - "5432:5432"
+  bot:
+    container_name: korona-watcher-bot
+    image: damintsew/korona-watcher-bot
+    environment:
+      DB_HOST: postgres

@@ -1,5 +1,4 @@
 import {getManager, LessThanOrEqual} from "typeorm";
-import {User} from "../entity/User";
 import {SubsriptionData} from "../entity/SubsriptionData";
 import {Telegram} from "telegraf";
 import {KoronaDao} from "../KoronaDao";
@@ -16,23 +15,41 @@ export class NotificationService {
 
     async process() {
         const newValue = await KoronaDao.call();
-        const difference = this.calculateDifference(newValue);
+        let difference = this.calculateDifference(newValue);
+        console.log("difference is :" + difference)
         if (difference == null) {
             return;
         }
 
+        const subscriptions = await this.getSubscriptions(difference);
+        for (let subscription of subscriptions) {
+            const text = `Курс изменился. 1$ = ${newValue}`
+            this.tg.sendMessage(subscription.user.userId, text)
+        }
+        this.previousStoredValue = newValue
+    }
+
+    private async getSubscriptions(difference: number) {
         const entityManager = getManager();
-        console.log("difference is :" + difference)
-        const subcriptions = await entityManager.find(SubsriptionData, {
-            where: { notificationThreshold: LessThanOrEqual(difference) },
+        const subscriptions = await entityManager.find(SubsriptionData, {
+            where: {notificationThreshold: LessThanOrEqual(difference)},
             relations: ["user"]
         });
 
-        for (let subsription of subcriptions) {
-            const text = `Курс изменился и теперь ${newValue}`
-            const res = await this.tg.sendMessage(subsription.user.userId, text)
+        const subscriptionDataByUserId = new Map<number, SubsriptionData>();
+        for (let s of subscriptions) {
+            //filter out subscripton and left only smaller of this
+            if (subscriptionDataByUserId.has(s.user.userId)) {
+                let existingSubscription = subscriptionDataByUserId.get(s.user.userId);
+                if (existingSubscription.notificationThreshold > s.notificationThreshold) {
+                    subscriptionDataByUserId.set(s.user.userId, s);
+                }
+            } else {
+                subscriptionDataByUserId.set(s.user.userId, s);
+            }
         }
-        this.previousStoredValue = newValue
+
+        return subscriptionDataByUserId.values();
     }
 
     private calculateDifference(newValue: number): number {
@@ -41,6 +58,7 @@ export class NotificationService {
             return;
         }
 
-        return Math.abs(newValue - this.previousStoredValue);
+        const absDifference = Math.abs(newValue - this.previousStoredValue) * 100;
+        return Math.round(absDifference);
     }
 }

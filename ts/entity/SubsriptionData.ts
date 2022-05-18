@@ -1,22 +1,19 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique} from "typeorm";
 import {User} from "./User";
 
 @Entity('subsription_data')
+@Unique("constraint_unique_subscription", ['country', 'notificationThreshold', "user"])
 export class SubsriptionData {
 
     @PrimaryGeneratedColumn()
     id: number;
+
     @Column()
     country: string
-    // @Column()
-    // notificationType: string
 
     @Column()
     notificationThreshold: number
-    // @Column()
-    // workType: string
-    // @Column()
-    // overallDescription: string
+
     @ManyToOne(() => User)
     user: User
 }

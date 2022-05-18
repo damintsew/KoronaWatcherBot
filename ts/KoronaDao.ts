@@ -17,6 +17,7 @@ export class KoronaDao {
                 'x-application: Qpay-Web/3.0']
         })
         console.log(data)
+
         if (data.length > 0) {
             return data[0].exchangeRate;
         }

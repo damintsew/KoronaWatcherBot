@@ -9,9 +9,6 @@ import {NotificationService} from "./dto/NotificationService";
 
 DBConnection.getConnection();
 
-
-
-
 const token = '5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs'
 if (token === undefined) {
     throw new Error('BOT_TOKEN must be provided!')
@@ -36,7 +33,11 @@ function text(value: string) {
 
 async function saveSubscription(subscriptionData: SubsriptionData) {
     const entityManager = getManager(); // you can also get it via getConnection().manager
-    await entityManager.save(subscriptionData);
+    try {
+        await entityManager.save(subscriptionData);
+    } catch (e) {
+        console.log("This subscription already exists", e)
+    }
 }
 
 stepHandler.action('100', async (ctx) => {
@@ -57,7 +58,7 @@ stepHandler.action('100', async (ctx) => {
 }).action('1', async (ctx) => {
     ctx.scene.session.subscriptionData.notificationThreshold = 1;
     await ctx.reply(text('1 копейку'), Markup.removeKeyboard())
-    saveSubscription(ctx.scene.session.subscriptionData)
+    await saveSubscription(ctx.scene.session.subscriptionData)
     return ctx.scene.leave()
 })
 
@@ -78,7 +79,8 @@ const subscribeWizard = new Scenes.WizardScene<MyContext>(
     async (ctx) => {
         // @ts-ignore todo remove ignore
         if (ctx.message.text == "➡️ Добавить страну") {
-            ctx.reply("Введите название страны: ")
+            await ctx.reply("Введите название страны: ")
+            return;
         }
 
         // @ts-ignore todo remove ignore
@@ -93,17 +95,6 @@ const subscribeWizard = new Scenes.WizardScene<MyContext>(
         return ctx.wizard.next()
     },
     stepHandler
-    // async (ctx) => {
-    //     // @ts-ignore todo remove ignore
-    //     ctx.scene.session.subscriptionData.notificationType = ctx.message.text;
-    //     ctx.scene.session.subscriptionData.user = ctx.session.user;
-    //
-    //     const entityManager = getManager(); // you can also get it via getConnection().manager
-    //     await entityManager.save(ctx.scene.session.subscriptionData);
-    //     await ctx.reply("Записал. Буду уведомлять.", Markup.removeKeyboard())
-    //
-    //     return ctx.scene.leave();
-    // },
 );
 
 const stage = new Scenes.Stage<MyContext>([subscribeWizard])
@@ -144,12 +135,12 @@ bot.use(async (ctx, next) => {
 })
 
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
-bot.command('unsubscribe', (ctx) => ctx.scene.enter('unsubscribe-wizard'))
-// bot.command('echo', (ctx) => ctx.scene.enter('echo'))
-bot.command('help', (ctx) => ctx.reply("/subscribe /unsubscribe"))
-bot.command('start', (ctx) => ctx.reply('Добрый день! Меня зовут Минимы.\n' +
-    'Я помощник Андрея. Я помогаю ему структурировать предложения по работе и ведение его календаря.\n' +
-    'Список моих команд доступеп по команде /help'));
+bot.command('list', (ctx) => ctx.reply("under construction"))
+// bot.command('unsubscribe', (ctx) => ctx.scene.enter('unsubscribe-wizard'))
+bot.command('help', (ctx) => ctx.reply("/subscribe /list /unsubscribe"))
+bot.command('start', (ctx) => ctx.reply('Привет!\n Я показываю курсы валют в Золотой Короне.\n' +
+    '/subscribe чтобы подписаться на уведомления. /unsubscribe - отписаться. /list показывает активные подписки /help для помощи'));
+
 bot.on('message',
     (ctx) => ctx.reply("Для получения списка команд и моих возможностей введите /help."))
 
