@@ -7,6 +7,7 @@ import {SubsriptionData} from "./entity/SubsriptionData";
 import {CronJobService} from "./CronJobService";
 import {NotificationService} from "./dto/NotificationService";
 import {env} from "node:process";
+import {MessageAnouncerService} from "./MessageAnouncerService";
 
 DBConnection.getConnection();
 
@@ -63,6 +64,14 @@ stepHandler.action('100', async (ctx) => {
     return ctx.scene.leave()
 })
 
+function mapCountry(countryString: string) {
+   const map = {
+        "➡️ Турция": "TUR",
+        "➡️ Грузия": "GEO"
+    }
+    return map[countryString];
+}
+
 const subscribeWizard = new Scenes.WizardScene<MyContext>(
     'subscribe-wizard',
     async (ctx) => {
@@ -72,21 +81,22 @@ const subscribeWizard = new Scenes.WizardScene<MyContext>(
         await ctx.replyWithMarkdown('В какую страну перевод?',
             Markup.keyboard([
                 Markup.button.callback('➡️ Турция', 'turkey'),
-                // Markup.button.callback('➡️ Грузия', 'georgia'),
+                Markup.button.callback('➡️ Грузия', 'georgia'),
                 Markup.button.callback('➡️ Добавить страну', 'add_country'),
             ]))
         return ctx.wizard.next()
     },
     async (ctx) => {
         // @ts-ignore todo remove ignore
-        if (ctx.message.text == "➡️ Добавить страну") {
+        const countryCode = mapCountry(ctx.message.text)
+        // @ts-ignore todo remove ignore
+        if (ctx.message.text == "➡️ Добавить страну" || countryCode == null) {
             await ctx.reply("Введите название страны: ")
             return;
         }
 
-        // @ts-ignore todo remove ignore
-        ctx.scene.session.subscriptionData.country = ctx.message.text;
-        await ctx.replyWithMarkdown('При каком изменении уведомлять?',
+        ctx.scene.session.subscriptionData.country = countryCode;
+        await ctx.replyWithMarkdown('Уведомлять при изменении курса более чем на:',
             Markup.inlineKeyboard([
                 Markup.button.callback('➡️ 1 рубль', "100"),
                 Markup.button.callback('➡️ 50 копеек', '50'),
@@ -149,7 +159,8 @@ bot.on('message',
 bot.launch()
 
 const notificationService = new NotificationService(tg)
-const cron = new CronJobService(notificationService);
+const mas = new MessageAnouncerService(tg)
+const cron = new CronJobService(notificationService, mas);
 
 // Enable graceful stop
 process.once('SIGINT', () => {
