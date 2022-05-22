@@ -1,6 +1,6 @@
 import {Equal} from "typeorm";
 import {SubsriptionData} from "../entity/SubsriptionData";
-import {ds} from "../DBConnection";
+import {ds} from "../data-source";
 
 export class SubscriptionService {
 
@@ -10,10 +10,6 @@ export class SubscriptionService {
             .innerJoinAndSelect("findSubscriptions.user", "userJoin")
             .where("userJoin.userId = :userId", { userId })
             .getMany();
-        // return  entityManager.find(SubsriptionData, {
-        //     where: {user: Equal(userId)},
-        //     relations: ["user"]
-        // });
     }
 
     async remove(subscriptionToRemove: SubsriptionData) {

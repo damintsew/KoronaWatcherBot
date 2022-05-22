@@ -2,7 +2,7 @@ import {User} from "./entity/User";
 import {Equal, getManager} from "typeorm";
 import {Announcements} from "./entity/Announcements";
 import {Telegram} from "telegraf";
-import {ds} from "./DBConnection";
+import {ds} from "./data-source";
 
 export class MessageAnouncerService {
 

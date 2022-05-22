@@ -1,13 +1,14 @@
 import {Composer, Markup, Scenes, session, Telegraf, Telegram} from 'telegraf'
 import {MyContext} from "./Domain";
 import {User} from "./entity/User";
-import {ds} from "./DBConnection";
+import {ds} from "./data-source";
 import {SubsriptionData} from "./entity/SubsriptionData";
 import {CronJobService} from "./CronJobService";
 import {NotificationService} from "./dto/NotificationService";
 import {env} from "node:process";
 import {MessageAnouncerService} from "./MessageAnouncerService";
 import {SubscriptionService} from "./service/SubscriptionService";
+import {SubscriptionWizard} from "./wizard/SubscriptionWizard";
 
 
 (async function () {
@@ -33,91 +34,7 @@ tg.deleteMyCommands()
     ]));
 
 
-const stepHandler = new Composer<MyContext>()
-
-function text(value: string) {
-    return 'Буду уведомлять при изменении цены больше чем на ' + value;
-}
-
-async function saveSubscription(subscriptionData: SubsriptionData) {
-    try {
-        await ds.manager.save(subscriptionData);
-    } catch (e) {
-        console.log("This subscription already exists", e)
-    }
-}
-
-stepHandler.action('100', async (ctx) => {
-    await ctx.reply(text('1 рубль'), Markup.removeKeyboard())
-    ctx.scene.session.subscriptionData.notificationThreshold = 100;
-    await saveSubscription(ctx.scene.session.subscriptionData)
-    return ctx.scene.leave()
-}).action('50', async (ctx) => {
-    await ctx.reply(text('50 копеек'), Markup.removeKeyboard())
-    ctx.scene.session.subscriptionData.notificationThreshold = 50;
-    await saveSubscription(ctx.scene.session.subscriptionData)
-    return ctx.scene.leave()
-}).action('10', async (ctx) => {
-    await ctx.reply(text('10 копеек'), Markup.removeKeyboard())
-    ctx.scene.session.subscriptionData.notificationThreshold = 10;
-    await saveSubscription(ctx.scene.session.subscriptionData)
-    return ctx.scene.leave()
-}).action('5', async (ctx) => {
-    await ctx.reply(text('5 копеек'), Markup.removeKeyboard())
-    ctx.scene.session.subscriptionData.notificationThreshold = 5;
-    await saveSubscription(ctx.scene.session.subscriptionData)
-    return ctx.scene.leave()
-}).action('1', async (ctx) => {
-    ctx.scene.session.subscriptionData.notificationThreshold = 1;
-    await ctx.reply(text('1 копейку'), Markup.removeKeyboard())
-    await saveSubscription(ctx.scene.session.subscriptionData)
-    return ctx.scene.leave()
-})
-
-function mapCountry(countryString: string) {
-    const map = {
-        "➡️ Турция": "TUR",
-        "➡️ Грузия": "GEO"
-    }
-    return map[countryString];
-}
-
-const subscribeWizard = new Scenes.WizardScene<MyContext>(
-    'subscribe-wizard',
-    async (ctx) => {
-        ctx.scene.session.subscriptionData = new SubsriptionData();
-        ctx.scene.session.subscriptionData.user = ctx.session.user;
-
-        await ctx.replyWithMarkdown('В какую страну перевод?',
-            Markup.keyboard([
-                Markup.button.callback('➡️ Турция', 'turkey'),
-                Markup.button.callback('➡️ Грузия', 'georgia'),
-                Markup.button.callback('➡️ Добавить страну', 'add_country'),
-            ]))
-        return ctx.wizard.next()
-    },
-    async (ctx) => {
-        // @ts-ignore todo remove ignore
-        const countryCode = mapCountry(ctx.message.text)
-        // @ts-ignore todo remove ignore
-        if (ctx.message.text == "➡️ Добавить страну" || countryCode == null) {
-            await ctx.reply("Введите название страны: ")
-            return;
-        }
-
-        ctx.scene.session.subscriptionData.country = countryCode;
-        await ctx.replyWithMarkdown('Уведомлять при изменении курса более чем на:',
-            Markup.inlineKeyboard([
-                Markup.button.callback('➡️ 1 рубль', "100"),
-                Markup.button.callback('➡️ 50 копеек', '50'),
-                Markup.button.callback('➡️ 10 копеек', '10'),
-                Markup.button.callback('➡️ 5 копеек', '5'),
-                Markup.button.callback('➡️ 1 копейка', '1'),
-            ], {columns: 1}))
-        return ctx.wizard.next()
-    },
-    stepHandler
-);
+const subscribeWizardService = new SubscriptionWizard();
 
 const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
     'unsubscribe-wizard',
@@ -166,7 +83,7 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
         }
     });
 
-const stage = new Scenes.Stage<MyContext>([subscribeWizard, unsubscribeWizard])
+const stage = new Scenes.Stage<MyContext>([subscribeWizardService.createSubscriptionWizard(), unsubscribeWizard])
 
 bot.use(session())
 bot.use(stage.middleware())

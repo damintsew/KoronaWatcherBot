@@ -2,7 +2,7 @@ import {Equal} from "typeorm";
 import {SubsriptionData} from "../entity/SubsriptionData";
 import {Telegram} from "telegraf";
 import {KoronaDao} from "../KoronaDao";
-import {ds} from "../DBConnection";
+import {ds} from "../data-source";
 
 
 export class NotificationService {
