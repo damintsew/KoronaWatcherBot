@@ -2,6 +2,7 @@ import {User} from "./entity/User";
 import {Equal, getManager} from "typeorm";
 import {Announcements} from "./entity/Announcements";
 import {Telegram} from "telegraf";
+import {ds} from "./DBConnection";
 
 export class MessageAnouncerService {
 
@@ -12,14 +13,13 @@ export class MessageAnouncerService {
     }
 
     async announce() {
-        const entityManager = getManager();
-        const announcements = await entityManager.find(Announcements, { where: {isSent: false}});
+        const announcements = await ds.manager.find(Announcements, { where: {isSent: false}});
 
         if (announcements.length == 0) {
             return;
         }
 
-        const users = await entityManager.find(User);
+        const users = await ds.manager.find(User);
 
         for(let a of announcements) {
             if (a.timeToSent < new Date()) {
@@ -36,7 +36,7 @@ export class MessageAnouncerService {
                 }
 
                 a.isSent = true;
-                await entityManager.save(a);
+                await ds.manager.save(a);
             }
         }
     }

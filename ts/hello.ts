@@ -1,8 +1,7 @@
 import {Composer, Markup, Scenes, session, Telegraf, Telegram} from 'telegraf'
 import {MyContext} from "./Domain";
-import {getManager} from "typeorm";
 import {User} from "./entity/User";
-import {DBConnection} from "./DBConnection";
+import {ds} from "./DBConnection";
 import {SubsriptionData} from "./entity/SubsriptionData";
 import {CronJobService} from "./CronJobService";
 import {NotificationService} from "./dto/NotificationService";
@@ -10,7 +9,10 @@ import {env} from "node:process";
 import {MessageAnouncerService} from "./MessageAnouncerService";
 import {SubscriptionService} from "./service/SubscriptionService";
 
-DBConnection.getConnection();
+
+(async function () {
+    await ds.initialize(); //todo get rid of this
+})()
 
 const token = env.TG_TOKEN
 if (token === undefined) {
@@ -38,9 +40,8 @@ function text(value: string) {
 }
 
 async function saveSubscription(subscriptionData: SubsriptionData) {
-    const entityManager = getManager(); // you can also get it via getConnection().manager
     try {
-        await entityManager.save(subscriptionData);
+        await ds.manager.save(subscriptionData);
     } catch (e) {
         console.log("This subscription already exists", e)
     }
@@ -172,13 +173,12 @@ bot.use(stage.middleware())
 bot.use(async (ctx, next) => {
 
     if (!ctx?.session.isUserSaved) {
-        const entityManager = getManager(); // you can also get it via getConnection().manager
         if (ctx.message == null || ctx.message.from == null || ctx.message.from.id == null) {
             return next();
         }
         const from = ctx?.message?.from;
 
-        const userFromDB = await entityManager.findOneBy(User, {userId: from.id});
+        const userFromDB = await ds.manager.findOneBy(User, {userId: from.id});
         if (userFromDB == null) {
             const newUser = new User();
 
@@ -191,7 +191,7 @@ bot.use(async (ctx, next) => {
 
             newUser.isAdmin = from.id === 152984728;
 
-            await entityManager.save(newUser)
+            await ds.manager.save(newUser)
             ctx.session.user = newUser;
         } else {
             ctx.session.user = userFromDB;

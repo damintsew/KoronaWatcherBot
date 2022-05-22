@@ -1,10 +1,11 @@
-import {Equal, getManager} from "typeorm";
+import {Equal} from "typeorm";
 import {SubsriptionData} from "../entity/SubsriptionData";
+import {ds} from "../DBConnection";
 
 export class SubscriptionService {
 
     getUserSubscriptions(userId: number): Promise<Array<SubsriptionData>> {
-        return getManager().getRepository(SubsriptionData)
+        return ds.manager.getRepository(SubsriptionData)
             .createQueryBuilder("findSubscriptions")
             .innerJoinAndSelect("findSubscriptions.user", "userJoin")
             .where("userJoin.userId = :userId", { userId })
@@ -16,7 +17,6 @@ export class SubscriptionService {
     }
 
     async remove(subscriptionToRemove: SubsriptionData) {
-        const entityManager = getManager();
-        await entityManager.remove(subscriptionToRemove);
+        await ds.manager.remove(subscriptionToRemove);
     }
 }

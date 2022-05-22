@@ -1,7 +1,8 @@
-import {Equal, getManager, LessThanOrEqual} from "typeorm";
+import {Equal} from "typeorm";
 import {SubsriptionData} from "../entity/SubsriptionData";
 import {Telegram} from "telegraf";
 import {KoronaDao} from "../KoronaDao";
+import {ds} from "../DBConnection";
 
 
 export class NotificationService {
@@ -25,7 +26,7 @@ export class NotificationService {
 
             if (subscription.lastNotifiedValue == null) {
                 subscription.lastNotifiedValue = newValue;
-                await getManager().getRepository(SubsriptionData).save(subscription)
+                await ds.manager.getRepository(SubsriptionData).save(subscription)
             }
 
             let difference = this.calculateDifference(subscription.lastNotifiedValue, newValue);
@@ -35,7 +36,7 @@ export class NotificationService {
             if (difference >= subscription.notificationThreshold) {
                 await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
                 subscription.lastNotifiedValue = newValue;
-                await getManager().getRepository(SubsriptionData).save(subscription)
+                await ds.manager.getRepository(SubsriptionData).save(subscription)
             }
         }
     }
@@ -54,8 +55,7 @@ export class NotificationService {
     }
 
     private async getSubscriptions(countryCode: string) {
-        const entityManager = getManager();
-        return entityManager.find(SubsriptionData, {
+        return ds.manager.find(SubsriptionData, {
             where: {country: Equal(countryCode)},
             relations: ["user"]
         });
