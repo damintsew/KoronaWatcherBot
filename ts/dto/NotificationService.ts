@@ -42,7 +42,7 @@ export class NotificationService {
 
     private async notifyUser(countryCode: string, userId: number, oldValue: number,  newValue: number) {
         const sign = newValue > oldValue ? "⬆️" : "⬇️";
-        const flag = this.mapCountryToFlag(countryCode);
+        const flag = NotificationService.mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`
         console.log("Sending message to user " + userId)
         try {
@@ -66,7 +66,7 @@ export class NotificationService {
         return Math.round(absDifference);
     }
 
-    private mapCountryToFlag(countryCode: string) {
+    public static mapCountryToFlag(countryCode: string) {
         const map = {
             GEO: '🇬🇪',
             TUR: '🇹🇷'

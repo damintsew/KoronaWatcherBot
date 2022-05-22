@@ -26,10 +26,6 @@ export class MessageAnouncerService {
                 const messageText = a.text;
                 for (let user of users) {
 
-                    if (this.alreadySent(user.userId)) {
-                        continue
-                    }
-
                     const userId = user.userId;
                     console.log("Sending message to user " + userId)
                     try {
@@ -47,31 +43,16 @@ export class MessageAnouncerService {
 
     async persistMessage() {
         const announsment = new Announcements();
-        announsment.messageId = 1
+        announsment.messageId = 7
         announsment.isSent = false;
-        announsment.timeToSent = new Date('09 May 2022 11:30:00 GMT+0300');
-        announsment.text = "Доброго времени суток! \nВ бота добавлена возможность следить за курсами $ в 🇬🇪 Грузии!\n" +
-         "Для получения уведомлений об изменении курса подпишитесь командой /subscribe ";
+        announsment.timeToSent = new Date('20 May 2022 12:00:00 GMT+0300');
+        announsment.text = "Друзья! \nСайт Короны не доступен.\nУведомления будут приходить, когда сайт станет снова доступным.";
 
         const entityManager = getManager();
         try {
             await entityManager.save(announsment)
         } catch (e) {
             console.log(e)
-        }
-    }
-
-    private alreadySent(userId: number) {
-        if (userId == 152984728
-        || userId == 39668525
-        || userId == 428969298
-        || userId == 850353
-        || userId == 1611005847
-        || userId == 279367242
-        || userId == 270770349
-        || userId == 322208263
-        || userId == 244273492) {
-            return true;
         }
     }
 }

@@ -33,6 +33,7 @@ export interface MyContext extends Context {
 export interface MyWizardSession extends Scenes.WizardSessionData {
     // will be available under `ctx.scene.session.myWizardSessionProp`
     subscriptionData: SubsriptionData
+    activeSubscriptions: Array<SubsriptionData>
 }
 
 /**

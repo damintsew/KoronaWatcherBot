@@ -1,5 +1,5 @@
-import {Composer, Context, Markup, Scenes, session, Telegraf, Telegram} from 'telegraf'
-import {MyContext, MyWizardSession} from "./Domain";
+import {Composer, Markup, Scenes, session, Telegraf, Telegram} from 'telegraf'
+import {MyContext} from "./Domain";
 import {getManager} from "typeorm";
 import {User} from "./entity/User";
 import {DBConnection} from "./DBConnection";
@@ -8,20 +8,24 @@ import {CronJobService} from "./CronJobService";
 import {NotificationService} from "./dto/NotificationService";
 import {env} from "node:process";
 import {MessageAnouncerService} from "./MessageAnouncerService";
+import {SubscriptionService} from "./service/SubscriptionService";
 
 DBConnection.getConnection();
 
-const token = env.TG_TOKEN  //prod
+const token = env.TG_TOKEN
 if (token === undefined) {
     throw new Error('BOT_TOKEN must be provided!')
 }
 
 const bot = new Telegraf<MyContext>(token)
 
+const subscriptionService = new SubscriptionService();
+
 let tg = new Telegram(token);
 tg.deleteMyCommands()
     .then(() => tg.setMyCommands([
         {command: 'subscribe', description: 'Подписаться на уведомления'},
+        {command: 'list', description: 'Список подписок'},
         {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
         {command: 'help', description: 'Список моих возможностей'}
     ]));
@@ -57,6 +61,11 @@ stepHandler.action('100', async (ctx) => {
     ctx.scene.session.subscriptionData.notificationThreshold = 10;
     await saveSubscription(ctx.scene.session.subscriptionData)
     return ctx.scene.leave()
+}).action('5', async (ctx) => {
+    await ctx.reply(text('5 копеек'), Markup.removeKeyboard())
+    ctx.scene.session.subscriptionData.notificationThreshold = 5;
+    await saveSubscription(ctx.scene.session.subscriptionData)
+    return ctx.scene.leave()
 }).action('1', async (ctx) => {
     ctx.scene.session.subscriptionData.notificationThreshold = 1;
     await ctx.reply(text('1 копейку'), Markup.removeKeyboard())
@@ -65,7 +74,7 @@ stepHandler.action('100', async (ctx) => {
 })
 
 function mapCountry(countryString: string) {
-   const map = {
+    const map = {
         "➡️ Турция": "TUR",
         "➡️ Грузия": "GEO"
     }
@@ -101,6 +110,7 @@ const subscribeWizard = new Scenes.WizardScene<MyContext>(
                 Markup.button.callback('➡️ 1 рубль', "100"),
                 Markup.button.callback('➡️ 50 копеек', '50'),
                 Markup.button.callback('➡️ 10 копеек', '10'),
+                Markup.button.callback('➡️ 5 копеек', '5'),
                 Markup.button.callback('➡️ 1 копейка', '1'),
             ], {columns: 1}))
         return ctx.wizard.next()
@@ -108,7 +118,54 @@ const subscribeWizard = new Scenes.WizardScene<MyContext>(
     stepHandler
 );
 
-const stage = new Scenes.Stage<MyContext>([subscribeWizard])
+const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
+    'unsubscribe-wizard',
+    async (ctx) => {
+        let subscriptions = await subscriptionService.getUserSubscriptions(ctx.session.user.userId)
+        let keyboard = [];
+        let replyLines = []
+        replyLines.push("Активные подписки:")
+        for (let [i, s] of subscriptions.entries()) {
+            const text = `${i+1}: ${NotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`
+            keyboard.push(Markup.button.text(text))
+            replyLines.push(text)
+        }
+        keyboard.push(Markup.button.text("Отмена"))
+
+        ctx.scene.session.activeSubscriptions = subscriptions;
+
+        await ctx.replyWithMarkdown(replyLines.join("\n"),
+            Markup.keyboard(keyboard))
+        return ctx.wizard.next()
+    },
+    async (ctx) => {
+        // @ts-ignore todo remove ignore
+        let reply = ctx.message.text as string;
+        try {
+            if (reply === "Отмена") {
+                await ctx.reply("Отменяю.", Markup.removeKeyboard())
+                return ctx.scene.leave();
+            }
+
+            const selectedIndex = Number.parseInt(reply.substring(0, 1)) - 1
+            const subscriptions = ctx.scene.session.activeSubscriptions
+
+            if (selectedIndex > subscriptions.length) {
+                throw new Error("Wrong index") //todo leave like this or refactor?
+            }
+
+            let subscriptionToRemove = subscriptions[selectedIndex];
+            await subscriptionService.remove(subscriptionToRemove);
+            await ctx.reply("Подписка удалена", Markup.removeKeyboard())
+
+            return ctx.scene.leave();
+
+        } catch (e) {
+            await ctx.reply("Повторите ввод")
+        }
+    });
+
+const stage = new Scenes.Stage<MyContext>([subscribeWizard, unsubscribeWizard])
 
 bot.use(session())
 bot.use(stage.middleware())
@@ -146,8 +203,16 @@ bot.use(async (ctx, next) => {
 })
 
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
-bot.command('list', (ctx) => ctx.reply("under construction"))
-bot.command('unsubscribe', (ctx) => ctx.reply("under construction"))
+bot.command('list', async (ctx) => {
+    let subscriptions = await subscriptionService.getUserSubscriptions(ctx.session.user.userId)
+    let text = "Активные подписки:\n"
+    text += subscriptions.map(s => `${NotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`)
+        .join("\n")
+    text += "\nЧтобы отписаться команда /unsubscribe"
+
+    ctx.reply(text)
+})
+bot.command('unsubscribe', (ctx) => ctx.scene.enter('unsubscribe-wizard'))
 
 bot.command('help', (ctx) => ctx.reply("/subscribe /list /unsubscribe"))
 bot.command('start', (ctx) => ctx.reply('Привет!\n Я показываю курсы валют в Золотой Короне.\n' +
