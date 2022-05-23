@@ -34,6 +34,7 @@ export interface MyWizardSession extends Scenes.WizardSessionData {
     // will be available under `ctx.scene.session.myWizardSessionProp`
     subscriptionData: SubsriptionData
     activeSubscriptions: Array<SubsriptionData>
+    timeSelectionButtons: { } //todo make typed array
 }
 
 /**

@@ -83,7 +83,9 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
         }
     });
 
-const stage = new Scenes.Stage<MyContext>([subscribeWizardService.createSubscriptionWizard(), unsubscribeWizard])
+const stage = new Scenes.Stage<MyContext>([
+    subscribeWizardService.createSubscriptionWizard(), subscribeWizardService.onChangeCurrencyWizard(),
+    subscribeWizardService.onScheduledTimeWizard(), unsubscribeWizard])
 
 bot.use(session())
 bot.use(stage.middleware())
