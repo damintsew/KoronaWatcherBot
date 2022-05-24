@@ -1,8 +1,10 @@
 import {Composer, Markup, Scenes} from "telegraf";
 import {MyContext} from "../Domain";
-import {SubsriptionData} from "../entity/SubsriptionData";
+import {SubscriptionData} from "../entity/SubscriptionData";
 import {ds} from "../data-source";
 import {TimeUnit} from "../entity/TimeUnit";
+import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
+import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 
 export class SubscriptionWizard {
 
@@ -11,8 +13,8 @@ export class SubscriptionWizard {
         return new Scenes.WizardScene<MyContext>(
             'subscribe-wizard',
             async (ctx) => {
-                ctx.scene.session.subscriptionData = new SubsriptionData();
-                ctx.scene.session.subscriptionData.user = ctx.session.user;
+                // ctx.scene.session.subscriptionData = new SubscriptionData();
+                // ctx.scene.session.subscriptionData.user = ctx.session.user;
 
                 await ctx.replyWithMarkdown('В какую страну перевод?',
                     Markup.keyboard([
@@ -31,7 +33,7 @@ export class SubscriptionWizard {
                     return;
                 }
 
-                ctx.scene.session.subscriptionData.country = countryCode;
+                ctx.scene.session.country = countryCode;
                 await ctx.replyWithMarkdown('Каким образом оповещать:',
                     Markup.keyboard([
                         Markup.button.callback('При изменении цены', 'turkey'),
@@ -45,11 +47,11 @@ export class SubscriptionWizard {
 
                 if (text == "По времени") {
                     return ctx.scene.enter("time-selection-scene", {
-                        subscriptionData: ctx.scene.session.subscriptionData
+                        country: ctx.scene.session.country
                     })
                 } else if (text == "При изменении цены") {
                     return ctx.scene.enter("change-currency-scene", {
-                        subscriptionData: ctx.scene.session.subscriptionData
+                        country: ctx.scene.session.country
                     })
                 }
             }
@@ -61,8 +63,11 @@ export class SubscriptionWizard {
         return new Scenes.WizardScene<MyContext>(
             'change-currency-scene',
             async (ctx) => {
-                ctx.scene.session.subscriptionData = ctx.scene.state["subscriptionData"] as SubsriptionData;
-                ctx.scene.session.subscriptionData.type = "ON_CHANGE"
+                ctx.scene.session.subscriptionData = new SubscriptionThresholdData()
+                ctx.scene.session.subscriptionData.country = ctx.scene.state["country"]
+                ctx.scene.session.subscriptionData.user = ctx.session.user
+                // ctx.scene.session.subscriptionData.type = "ON_CHANGE"
+
                 await ctx.replyWithMarkdown('Уведомлять при изменении курса более чем на:',
                     Markup.inlineKeyboard([
                         Markup.button.callback('➡️ 1 рубль', "100"),
@@ -96,9 +101,10 @@ export class SubscriptionWizard {
             const selectedOptions = this.filterSelectedItems(ctx.scene.session.timeSelectionButtons)
             if (selectedOptions.length == 0) {
                 //todo show notification
+                ctx.answerCbQuery("Пожалуйста выберите временной слот.")
                 return;
             }
-            const subscriptionToCreate = ctx.scene.session.subscriptionData
+            const subscriptionToCreate = ctx.scene.session.subscriptionData as SubscriptionScheduledData
             subscriptionToCreate.triggerTime = selectedOptions.map(selectedOptions => {
                 const unit = new TimeUnit();
                 unit.timeHours = selectedOptions.id
@@ -106,15 +112,30 @@ export class SubscriptionWizard {
 
                 return unit
             })
+            const existingSubscriptions = await ds.getRepository(SubscriptionScheduledData)
+                .createQueryBuilder("getScheduledSubscriptions")
+                .innerJoinAndSelect("getScheduledSubscriptions.user", "user")
+                .innerJoinAndSelect("getScheduledSubscriptions.triggerTime", "trigger")
+                .where("user.userId = :userId AND country = :countryCode",
+                    { userId: subscriptionToCreate.user.userId, countryCode: subscriptionToCreate.country })
+                .getMany()
+            for (let s of existingSubscriptions) {
+                await ds.manager.remove(s.triggerTime)
+                await ds.manager.remove(s)
+            }
+            // await ds.manager.remove(existingSubscriptions)
             await this.saveSubscription(subscriptionToCreate)
+            await ctx.reply("Настройки подписки сохранены.", Markup.removeKeyboard())
         })
 
         return new Scenes.WizardScene<MyContext>(
             'time-selection-scene',
             async (ctx) => {
-                ctx.scene.session.subscriptionData = ctx.scene.state["subscriptionData"] as SubsriptionData;
-                ctx.scene.session.subscriptionData.type = "SCHEDULED"
-                ctx.scene.session.timeSelectionButtons = createButtonsConfig()
+                ctx.scene.session.subscriptionData = new SubscriptionScheduledData();
+                ctx.scene.session.subscriptionData.country = ctx.scene.state["country"]
+                ctx.scene.session.subscriptionData.user = ctx.session.user
+
+                ctx.scene.session.timeSelectionButtons = this.createButtonsConfig()
 
                 const buttons = this.processSelectedBUttons(ctx.scene.session.timeSelectionButtons)
                 buttons.push(Markup.button.callback("Сохранить", "next"))
@@ -179,8 +200,16 @@ export class SubscriptionWizard {
             }
 
             const replyText = `Буду уведомлять при изменении цены больше чем на ${replyMap[selectedThreshold]}`
-            ctx.scene.session.subscriptionData.notificationThreshold = selectedThreshold;
-            await this.saveSubscription(ctx.scene.session.subscriptionData)
+            const subscription = ctx.scene.session.subscriptionData as SubscriptionThresholdData
+            subscription.notificationThreshold = selectedThreshold;
+
+            ds.getRepository(SubscriptionThresholdData)
+                .createQueryBuilder("findSubscriptions")
+                .innerJoinAndSelect("findSubscriptions.user", "userJoin")
+                .where("userJoin.userId = :userId AND coutry = :countryCode",
+                    { userId: subscription.user.userId, countryCode: subscription.country })
+                .delete()
+            await this.saveSubscription(subscription)
             await ctx.reply(replyText, Markup.removeKeyboard())
 
             return ctx.scene.leave()
@@ -209,8 +238,10 @@ export class SubscriptionWizard {
         return filteredButtons;
     }
 
-    private async saveSubscription(subscriptionData: SubsriptionData) {
+    private async saveSubscription(subscriptionData: SubscriptionData) {
         try {
+            await ds.manager.getRepository(SubscriptionThresholdData).createQueryBuilder()
+                .where({})
             await ds.manager.save(subscriptionData);
         } catch (e) {
             console.log("This subscription already exists", e)

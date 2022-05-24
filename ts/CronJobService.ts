@@ -1,44 +1,67 @@
 import {CronJob} from 'cron';
 import {KoronaDao} from "./KoronaDao";
-import {NotificationService} from "./dto/NotificationService";
+import {ThresholdNotificationService} from "./dto/ThresholdNotificationService";
 import {MessageAnouncerService} from "./MessageAnouncerService";
+import {ScheduledNotificationService} from "./service/ScheduledNotificationService";
 
 export class CronJobService {
 
-    cronJob: CronJob;
-    notificationService: NotificationService
+    everyMinuteJob: CronJob;
+    everyHourJob: CronJob;
+    notificationService: ThresholdNotificationService
+    scheduledNotificationService: ScheduledNotificationService
     messageAnouncerService: MessageAnouncerService
 
-    constructor(notificationService: NotificationService, messageAnouncerService: MessageAnouncerService) {
+    constructor(notificationService: ThresholdNotificationService,
+                messageAnouncerService: MessageAnouncerService,
+                scheduledNotificationService: ScheduledNotificationService) {
         this.notificationService = notificationService;
         this.messageAnouncerService = messageAnouncerService;
-        this.cronJob = new CronJob('0 */1 * * * *', async () => {
+        this.scheduledNotificationService = scheduledNotificationService;
+        this.everyMinuteJob = new CronJob('0 */1 * * * *', async () => {
             try {
-                await this.action();
+                await this.minuteAction();
+            } catch (e) {
+                console.error(e);
+            }
+        });
+        this.everyHourJob = new CronJob('0 0 */1 * * *', async () => {
+            try {
+                await this.hourAction();
             } catch (e) {
                 console.error(e);
             }
         });
 
         // Start job
-        if (!this.cronJob.running) {
-            this.cronJob.start();
+        if (!this.everyMinuteJob.running) {
+            this.everyMinuteJob.start();
+        }
+        if (!this.everyHourJob.running) {
+            this.everyHourJob.start();
         }
     }
 
-    async action(): Promise<void> {
+    async minuteAction(): Promise<void> {
         console.log("Call Korona")
         await this.notificationService.process();
 
         console.log("End Call Korona")
-
         // await this.messageAnouncerService.persistMessage();
         // await this.messageAnouncerService.announce();
     }
 
+    async hourAction(): Promise<void> {
+        console.log("Hour")
+        await this.scheduledNotificationService.process()
+    }
+
     stop() {
-        if (this.cronJob.running) {
-            this.cronJob.stop();
+        if (this.everyMinuteJob.running) {
+            this.everyMinuteJob.stop();
+        }
+        if (this.everyHourJob.running) {
+            this.everyHourJob.stop();
         }
     }
 }

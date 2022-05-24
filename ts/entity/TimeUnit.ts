@@ -1,5 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique} from "typeorm";
-import {SubsriptionData} from "./SubsriptionData";
+import {SubscriptionData} from "./SubscriptionData";
+import {SubscriptionScheduledData} from "./SubscriptionScheduledData";
 
 @Entity('time_unit')
 @Unique("constraint_unique_time_unit", ['timeHours', 'subscription'])
@@ -11,6 +12,8 @@ export class TimeUnit {
     @Column()
     timeHours: number
 
-    @ManyToOne(() => SubsriptionData, (SubsriptionData) => SubsriptionData.id)
-    subscription: SubsriptionData
+    @ManyToOne(() => SubscriptionScheduledData,
+        (SubscriptionScheduledData) => SubscriptionScheduledData.id,
+        {nullable: false})
+    subscription: SubscriptionScheduledData
 }

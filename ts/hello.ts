@@ -2,13 +2,16 @@ import {Composer, Markup, Scenes, session, Telegraf, Telegram} from 'telegraf'
 import {MyContext} from "./Domain";
 import {User} from "./entity/User";
 import {ds} from "./data-source";
-import {SubsriptionData} from "./entity/SubsriptionData";
+import {SubscriptionData} from "./entity/SubscriptionData";
 import {CronJobService} from "./CronJobService";
-import {NotificationService} from "./dto/NotificationService";
+import {ThresholdNotificationService} from "./dto/ThresholdNotificationService";
 import {env} from "node:process";
 import {MessageAnouncerService} from "./MessageAnouncerService";
 import {SubscriptionService} from "./service/SubscriptionService";
 import {SubscriptionWizard} from "./wizard/SubscriptionWizard";
+import {SubscriptionThresholdData} from "./entity/SubscriptionThresholdData";
+import {ScheduledNotificationService} from "./service/ScheduledNotificationService";
+import {TimeUnit} from "./entity/TimeUnit";
 
 
 (async function () {
@@ -39,18 +42,39 @@ const subscribeWizardService = new SubscriptionWizard();
 const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
     'unsubscribe-wizard',
     async (ctx) => {
-        let subscriptions = await subscriptionService.getUserSubscriptions(ctx.session.user.userId)
+        function concatDates(timeUnits: TimeUnit[]) {
+            return timeUnits.map(time => time.timeHours).join(",")
+        }
+        const allSubscriptions: SubscriptionData[] = []
+
+        let subscriptions = await subscriptionService.getThresholdSubscriptionsByUser(ctx.session.user.userId) as SubscriptionThresholdData[]
         let keyboard = [];
         let replyLines = []
         replyLines.push("Активные подписки:")
-        for (let [i, s] of subscriptions.entries()) {
-            const text = `${i+1}: ${NotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`
+        let i = 1;
+        for (let s of subscriptions) {
+            const text = `${i}: ${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`
             keyboard.push(Markup.button.text(text))
             replyLines.push(text)
+            i++;
+        }
+
+        allSubscriptions.push(...subscriptions)
+
+        let scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.session.user.userId)
+        if (scheduledSubscriptions.length > 0) {
+            replyLines.push("Подписка по времени:\n")
+            for(let s of scheduledSubscriptions) {
+                let text = (`${i}: ${ThresholdNotificationService.mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
+                replyLines.push(text)
+                keyboard.push(Markup.button.text(text))
+                allSubscriptions.push(s)
+                i++
+            }
         }
         keyboard.push(Markup.button.text("Отмена"))
 
-        ctx.scene.session.activeSubscriptions = subscriptions;
+        ctx.scene.session.activeSubscriptions = allSubscriptions;
 
         await ctx.replyWithMarkdown(replyLines.join("\n"),
             Markup.keyboard(keyboard))
@@ -66,13 +90,13 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
             }
 
             const selectedIndex = Number.parseInt(reply.substring(0, 1)) - 1
-            const subscriptions = ctx.scene.session.activeSubscriptions
+            const allSubscriptions = ctx.scene.session.activeSubscriptions
 
-            if (selectedIndex > subscriptions.length) {
+            if (selectedIndex > allSubscriptions.length) {
                 throw new Error("Wrong index") //todo leave like this or refactor?
             }
 
-            let subscriptionToRemove = subscriptions[selectedIndex];
+            let subscriptionToRemove = allSubscriptions[selectedIndex];
             await subscriptionService.remove(subscriptionToRemove);
             await ctx.reply("Подписка удалена", Markup.removeKeyboard())
 
@@ -123,11 +147,29 @@ bot.use(async (ctx, next) => {
 
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
 bot.command('list', async (ctx) => {
-    let subscriptions = await subscriptionService.getUserSubscriptions(ctx.session.user.userId)
+    function concatDates(timeUnits: TimeUnit[]) {
+        return timeUnits.map(time => time.timeHours).join(",")
+    }
+
+    let subscriptionsByThreshold = await subscriptionService.getThresholdSubscriptionsByUser(ctx.session.user.userId)
     let text = "Активные подписки:\n"
-    text += subscriptions.map(s => `${NotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`)
-        .join("\n")
-    text += "\nЧтобы отписаться команда /unsubscribe"
+
+    if (subscriptionsByThreshold.length > 0) {
+        text = "Подписка по изменению цены:\n"
+        text += "\t" + subscriptionsByThreshold.map(s => `${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`)
+            .join("\n")
+        text +="\n"
+    }
+    let scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.session.user.userId)
+    if (scheduledSubscriptions.length > 0) {
+        text += "Подписка по времени:\n"
+        for(let s of scheduledSubscriptions) {
+            text += `\t${ThresholdNotificationService.mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`
+            text +="\n"
+        }
+    }
+
+    text += "Чтобы отписаться команда /unsubscribe"
 
     ctx.reply(text)
 })
@@ -142,9 +184,10 @@ bot.on('message',
 
 bot.launch()
 
-const notificationService = new NotificationService(tg)
+const notificationService = new ThresholdNotificationService(tg)
 const mas = new MessageAnouncerService(tg)
-const cron = new CronJobService(notificationService, mas);
+const scheduledNotificationService = new ScheduledNotificationService(tg, subscriptionService)
+const cron = new CronJobService(notificationService, mas, scheduledNotificationService);
 
 // Enable graceful stop
 process.once('SIGINT', () => {

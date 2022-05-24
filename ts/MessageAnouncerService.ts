@@ -43,14 +43,15 @@ export class MessageAnouncerService {
 
     async persistMessage() {
         const announsment = new Announcements();
-        announsment.messageId = 7
+        announsment.messageId = 8
         announsment.isSent = false;
-        announsment.timeToSent = new Date('20 May 2022 12:00:00 GMT+0300');
-        announsment.text = "Друзья! \nСайт Короны не доступен.\nУведомления будут приходить, когда сайт станет снова доступным.";
+        announsment.timeToSent = new Date('24 May 2022 12:15:00 GMT+0300');
+        announsment.text = "Друзья! \nВышло большое обновление бота.\nТеперь бот может уведомлять по времени. Нужно создать новую подписку /subscribe.\n" +
+            "Если бот перестал оповещать вас, то пересоздайте существующие подписки.\n\n" +
+            "По проблемам, вопросам и предложениям по работе бота - пишите в группу https://t.me/KoronaWatcherSupportBot ";
 
-        const entityManager = getManager();
         try {
-            await entityManager.save(announsment)
+            await ds.manager.save(announsment)
         } catch (e) {
             console.log(e)
         }
