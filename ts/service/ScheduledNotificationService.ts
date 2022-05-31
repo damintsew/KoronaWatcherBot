@@ -1,9 +1,6 @@
-import {Equal, In} from "typeorm";
-import {SubscriptionData} from "../entity/SubscriptionData";
 import {Telegram} from "telegraf";
 import {KoronaDao} from "../KoronaDao";
 import {ds} from "../data-source";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
 import {ThresholdNotificationService} from "../dto/ThresholdNotificationService";
@@ -22,6 +19,7 @@ export class ScheduledNotificationService {
     async process() {
         await this.processCountry("TUR")
         await this.processCountry("GEO")
+        await this.processCountry("ISR")
     }
 
     private async processCountry(countryCode: string) {
@@ -31,10 +29,10 @@ export class ScheduledNotificationService {
         const subscriptions = await this.subscriptionService.getScheduledSubscriptionsByCountryAndHour(countryCode, currentHour);
         for (let subscription of subscriptions) {
             console.log(subscription)
-            // if (subscription.lastNotifiedValue == null) {
+            if (subscription.lastNotifiedValue == null) {
                 subscription.lastNotifiedValue = newValue;
                 // await ds.manager.getRepository(SubscriptionScheduledData).save(subscription)
-            // }
+            }
 
             let difference = this.calculateDifference(subscription.lastNotifiedValue, newValue);
             console.log(`!!!!Country=${subscription.country} UserId = ${subscription.user.userId} newValue = ${newValue} lastNotifiedValue = ${subscription.lastNotifiedValue} ` +
@@ -42,12 +40,12 @@ export class ScheduledNotificationService {
 
             await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
             subscription.lastNotifiedValue = newValue;
-            await ds.manager.getRepository(SubscriptionScheduledData).save(subscription)
+            await ds.manager.getRepository(SubscriptionScheduledData).update(subscription.id, {lastNotifiedValue : newValue})
         }
     }
 
     private async notifyUser(countryCode: string, userId: number, oldValue: number, newValue: number) {
-        const sign = newValue > oldValue ? "⬆️" : "⬇️";
+        const sign = ScheduledNotificationService.getSign(newValue, oldValue);
         const flag = ThresholdNotificationService.mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`
         console.log("Sending message to user " + userId)
@@ -58,6 +56,13 @@ export class ScheduledNotificationService {
         }
     }
 
+    private static getSign(newValue: number, oldValue: number) {
+        if (newValue === oldValue) {
+            return "↔️"
+        }
+        return newValue > oldValue ? "⬆️" : "⬇️";
+    }
+
     private calculateDifference(currentValue: number, newValue: number): number {
         const absDifference = Math.abs(newValue - currentValue) * 100;
         return Math.round(absDifference);
@@ -66,7 +71,8 @@ export class ScheduledNotificationService {
     public static mapCountryToFlag(countryCode: string) {
         const map = {
             GEO: '🇬🇪',
-            TUR: '🇹🇷'
+            TUR: '🇹🇷',
+            ISR: '🇮🇱'
         }
         return map[countryCode];
     }

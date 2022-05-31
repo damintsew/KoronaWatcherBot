@@ -18,6 +18,7 @@ export class ThresholdNotificationService {
     async process() {
         await this.processCountry("TUR")
         await this.processCountry("GEO")
+        await this.processCountry("ISR")
     }
 
     private async processCountry(countryCode: string) {
@@ -78,7 +79,8 @@ export class ThresholdNotificationService {
     public static mapCountryToFlag(countryCode: string) {
         const map = {
             GEO: '🇬🇪',
-            TUR: '🇹🇷'
+            TUR: '🇹🇷',
+            ISR: '🇮🇱'
         }
         return map[countryCode];
     }

@@ -20,6 +20,7 @@ export class SubscriptionWizard {
                     Markup.keyboard([
                         Markup.button.callback('➡️ Турция', 'turkey'),
                         Markup.button.callback('➡️ Грузия', 'georgia'),
+                        Markup.button.callback('➡️ Израиль', 'georgia'),
                         Markup.button.callback('➡️ Добавить страну', 'add_country'),
                     ]))
                 return ctx.wizard.next()
@@ -221,7 +222,8 @@ export class SubscriptionWizard {
     private mapCountry(countryString: string): string {
         const map = {
             "➡️ Турция": "TUR",
-            "➡️ Грузия": "GEO"
+            "➡️ Грузия": "GEO",
+            "➡️ Израиль": "ISR"
         }
         return map[countryString];
     }

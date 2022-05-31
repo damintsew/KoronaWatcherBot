@@ -52,18 +52,22 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
         let replyLines = []
         replyLines.push("Активные подписки:")
         let i = 1;
-        for (let s of subscriptions) {
-            const text = `${i}: ${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`
-            keyboard.push(Markup.button.text(text))
-            replyLines.push(text)
-            i++;
+        if (subscriptions.length > 0) {
+            replyLines.push("Подписка по изменению цены:")
+            for (let s of subscriptions) {
+                const text = `${i}: ${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`
+                keyboard.push(Markup.button.text(text))
+                replyLines.push(text)
+                i++;
+            }
+            replyLines.push("")
         }
 
         allSubscriptions.push(...subscriptions)
 
         let scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.session.user.userId)
         if (scheduledSubscriptions.length > 0) {
-            replyLines.push("Подписка по времени:\n")
+            replyLines.push("Подписка по времени:")
             for(let s of scheduledSubscriptions) {
                 let text = (`${i}: ${ThresholdNotificationService.mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
                 replyLines.push(text)
@@ -82,7 +86,7 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
     },
     async (ctx) => {
         // @ts-ignore todo remove ignore
-        let reply = ctx.message.text as string;
+        let reply = ctx?.message?.text as string;
         try {
             if (reply === "Отмена") {
                 await ctx.reply("Отменяю.", Markup.removeKeyboard())
@@ -152,26 +156,28 @@ bot.command('list', async (ctx) => {
     }
 
     let subscriptionsByThreshold = await subscriptionService.getThresholdSubscriptionsByUser(ctx.session.user.userId)
-    let text = "Активные подписки:\n"
+    const lines = []
+    lines.push("Активные подписки:")
 
     if (subscriptionsByThreshold.length > 0) {
-        text = "Подписка по изменению цены:\n"
-        text += "\t" + subscriptionsByThreshold.map(s => `${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`)
-            .join("\n")
-        text +="\n"
+        lines.push( "Подписка по изменению цены:")
+        lines.push(...subscriptionsByThreshold
+            .map(s => ` - ${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`))
+
+        lines.push("")
     }
     let scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.session.user.userId)
     if (scheduledSubscriptions.length > 0) {
-        text += "Подписка по времени:\n"
+        lines.push("Подписка по времени:")
         for(let s of scheduledSubscriptions) {
-            text += `\t${ThresholdNotificationService.mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`
-            text +="\n"
+            lines.push(`\t - ${ThresholdNotificationService.mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
         }
+        lines.push("")
     }
 
-    text += "Чтобы отписаться команда /unsubscribe"
+    lines.push("Чтобы отписаться команда /unsubscribe")
 
-    ctx.reply(text)
+    ctx.reply(lines.join("\n"))
 })
 bot.command('unsubscribe', (ctx) => ctx.scene.enter('unsubscribe-wizard'))
 
