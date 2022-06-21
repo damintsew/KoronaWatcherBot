@@ -43,11 +43,10 @@ export class MessageAnouncerService {
 
     async persistMessage() {
         const announsment = new Announcements();
-        announsment.messageId = 8
+        announsment.messageId = 9
         announsment.isSent = false;
-        announsment.timeToSent = new Date('24 May 2022 12:15:00 GMT+0300');
-        announsment.text = "Друзья! \nВышло большое обновление бота.\nТеперь бот может уведомлять по времени. Нужно создать новую подписку /subscribe.\n" +
-            "Если бот перестал оповещать вас, то пересоздайте существующие подписки.\n\n" +
+        announsment.timeToSent = new Date('22 Jun 2022 10:00:00 GMT+0300');
+        announsment.text = "Друзья! \nДобавлена Греция. Добавляйте подписку через /subscribe\n\n" +
             "По проблемам, вопросам и предложениям по работе бота - пишите в группу https://t.me/KoronaWatcherSupportBot ";
 
         try {

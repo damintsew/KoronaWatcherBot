@@ -19,6 +19,7 @@ export class SubscriptionWizard {
                 await ctx.replyWithMarkdown('В какую страну перевод?',
                     Markup.keyboard([
                         Markup.button.callback('➡️ Турция', 'turkey'),
+                        Markup.button.callback('➡️ Греция', 'greece'),
                         Markup.button.callback('➡️ Грузия', 'georgia'),
                         Markup.button.callback('➡️ Израиль', 'georgia'),
                         Markup.button.callback('➡️ Добавить страну', 'add_country'),
@@ -222,6 +223,7 @@ export class SubscriptionWizard {
     private mapCountry(countryString: string): string {
         const map = {
             "➡️ Турция": "TUR",
+            "➡️ Греция": "GRC",
             "➡️ Грузия": "GEO",
             "➡️ Израиль": "ISR"
         }

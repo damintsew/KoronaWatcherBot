@@ -20,6 +20,7 @@ export class ScheduledNotificationService {
         await this.processCountry("TUR")
         await this.processCountry("GEO")
         await this.processCountry("ISR")
+        await this.processCountry("GRC")
     }
 
     private async processCountry(countryCode: string) {
@@ -72,7 +73,8 @@ export class ScheduledNotificationService {
         const map = {
             GEO: '🇬🇪',
             TUR: '🇹🇷',
-            ISR: '🇮🇱'
+            ISR: '🇮🇱',
+            GRC: '🇬🇷'
         }
         return map[countryCode];
     }
