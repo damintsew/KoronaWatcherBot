@@ -20,7 +20,7 @@ import {TimeUnit} from "./entity/TimeUnit";
 
 const token = env.TG_TOKEN
 if (token === undefined) {
-    throw new Error('BOT_TOKEN must be provided!')
+    throw new Error('TG_TOKEN must be provided!')
 }
 
 const bot = new Telegraf<MyContext>(token)
