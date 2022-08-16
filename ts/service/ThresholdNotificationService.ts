@@ -1,11 +1,13 @@
 import {Equal} from "typeorm";
-import {SubsriptionData} from "../entity/SubsriptionData";
+import {SubscriptionData} from "../entity/SubscriptionData";
 import {Telegram} from "telegraf";
 import {KoronaDao} from "../KoronaDao";
 import {ds} from "../data-source";
+import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
+import {ExchangeHistory} from "../entity/ExchangeHistory";
 
 
-export class NotificationService {
+export class ThresholdNotificationService {
 
     tg: Telegram;
 
@@ -16,17 +18,34 @@ export class NotificationService {
     async process() {
         await this.processCountry("TUR")
         await this.processCountry("GEO")
+        await this.processCountry("ISR")
+        await this.processCountry("GRC")
     }
 
     private async processCountry(countryCode: string) {
         const newValue = await KoronaDao.call(countryCode);
+
+        if (newValue == undefined || newValue == 0) {
+            return
+        }
+
+        if (newValue != null) {
+            const exchange = new ExchangeHistory()
+            exchange.country = countryCode
+            exchange.currency = "USD"
+            exchange.dateTime = new Date()
+            exchange.value = newValue
+
+            await ds.manager.save(exchange)
+        }
+
 
         const subscriptions = await this.getSubscriptions(countryCode);
         for (let subscription of subscriptions) {
 
             if (subscription.lastNotifiedValue == null) {
                 subscription.lastNotifiedValue = newValue;
-                await ds.manager.getRepository(SubsriptionData).save(subscription)
+                await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
             }
 
             let difference = this.calculateDifference(subscription.lastNotifiedValue, newValue);
@@ -36,14 +55,14 @@ export class NotificationService {
             if (difference >= subscription.notificationThreshold) {
                 await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
                 subscription.lastNotifiedValue = newValue;
-                await ds.manager.getRepository(SubsriptionData).save(subscription)
+                await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
             }
         }
     }
 
     private async notifyUser(countryCode: string, userId: number, oldValue: number,  newValue: number) {
         const sign = newValue > oldValue ? "⬆️" : "⬇️";
-        const flag = NotificationService.mapCountryToFlag(countryCode);
+        const flag = ThresholdNotificationService.mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`
         console.log("Sending message to user " + userId)
         try {
@@ -51,11 +70,10 @@ export class NotificationService {
         } catch (e) {
             console.log(e)
         }
-
     }
 
     private async getSubscriptions(countryCode: string) {
-        return ds.manager.find(SubsriptionData, {
+        return ds.manager.find(SubscriptionThresholdData, {
             where: {country: Equal(countryCode)},
             relations: ["user"]
         });
@@ -69,7 +87,9 @@ export class NotificationService {
     public static mapCountryToFlag(countryCode: string) {
         const map = {
             GEO: '🇬🇪',
-            TUR: '🇹🇷'
+            TUR: '🇹🇷',
+            ISR: '🇮🇱',
+            GRC: '🇬🇷'
         }
         return map[countryCode];
     }

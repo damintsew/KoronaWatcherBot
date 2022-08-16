@@ -3,10 +3,10 @@ import {Entity, PrimaryGeneratedColumn, Column, PrimaryColumn} from "typeorm";
 @Entity()
 export class User {
 
-    @PrimaryColumn()
+    @PrimaryColumn({type: "bigint"})
     userId: number
 
-    @Column({nullable: true})
+    @Column({nullable: true, type: "bigint"})
     chatId: number
 
     @Column({nullable: true})

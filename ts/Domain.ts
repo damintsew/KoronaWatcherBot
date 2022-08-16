@@ -1,6 +1,7 @@
 import {Context, Scenes} from "telegraf";
-import {SubsriptionData} from "./entity/SubsriptionData";
+import {SubscriptionData} from "./entity/SubscriptionData";
 import {User} from "./entity/User";
+import {SubscriptionThresholdData} from "./entity/SubscriptionThresholdData";
 
 /**
  * Now that we have our session object, we can define our own context object.
@@ -32,8 +33,11 @@ export interface MyContext extends Context {
  */
 export interface MyWizardSession extends Scenes.WizardSessionData {
     // will be available under `ctx.scene.session.myWizardSessionProp`
-    subscriptionData: SubsriptionData
-    activeSubscriptions: Array<SubsriptionData>
+    subscriptionData: SubscriptionThresholdData | SubscriptionData
+    activeSubscriptions: Array<SubscriptionData>
+    timeSelectionButtons: { } //todo make typed array
+
+    country: string
 }
 
 /**

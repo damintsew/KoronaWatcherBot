@@ -42,15 +42,28 @@ export class MessageAnouncerService {
     }
 
     async persistMessage() {
-        const announsment = new Announcements();
-        announsment.messageId = 7
-        announsment.isSent = false;
-        announsment.timeToSent = new Date('20 May 2022 12:00:00 GMT+0300');
-        announsment.text = "Друзья! \nСайт Короны не доступен.\nУведомления будут приходить, когда сайт станет снова доступным.";
-
-        const entityManager = getManager();
+        const messageId = 10;
+        let existingMgs
         try {
-            await entityManager.save(announsment)
+            existingMgs = await ds.manager.find(Announcements, { where: {messageId: messageId}});
+        } catch (e) {
+            console.log(e)
+        }
+
+        if (existingMgs != null) {
+            return
+        }
+
+        const announsment = new Announcements();
+        announsment.messageId = messageId;
+        announsment.isSent = false;
+        announsment.timeToSent = new Date('17 Aug 2022 10:00:00 GMT+0300');
+        announsment.text = "Друзья! \nЗолотая Корона перестала предоставлять информацию по Греции. Ваши подписки сохранены. Ждем дальнейших обнолений от ЗК." +
+            "\nТакже наблюдаются проблемы с запросом данных по Израилю.\n\n" +
+            "По проблемам, вопросам и предложениям по работе бота - пишите в группу https://t.me/KoronaWatcherSupportBot ";
+
+        try {
+            await ds.manager.save(announsment)
         } catch (e) {
             console.log(e)
         }
