@@ -25,13 +25,20 @@ export class ThresholdNotificationService {
     private async processCountry(countryCode: string) {
         const newValue = await KoronaDao.call(countryCode);
 
-        const exchange = new ExchangeHistory()
-        exchange.country = countryCode
-        exchange.currency = "USD"
-        exchange.dateTime = new Date()
-        exchange.value = newValue
+        if (newValue == undefined || newValue == 0) {
+            return
+        }
 
-        await ds.manager.save(exchange)
+        if (newValue != null) {
+            const exchange = new ExchangeHistory()
+            exchange.country = countryCode
+            exchange.currency = "USD"
+            exchange.dateTime = new Date()
+            exchange.value = newValue
+
+            await ds.manager.save(exchange)
+        }
+
 
         const subscriptions = await this.getSubscriptions(countryCode);
         for (let subscription of subscriptions) {

@@ -5,9 +5,8 @@ export class KoronaDao {
 
     static async call(countryCode: string): Promise<number> {
 
-        const { statusCode, data } = await curly.get(`https://koronapay.com/transfers/online/api/transfers/tariffs?sendingCountryId=RUS&sendingCurrencyId=810&receivingCountryId=TUR&receivingCurrencyId=840&paymentMethod=debitCard&receivingAmount=200000&receivingMethod=cash&paidNotificationEnabled=true`, {
+        const { statusCode, data } = await curly.get(`https://koronapay.com/transfers/online/api/transfers/tariffs?sendingCountryId=RUS&sendingCurrencyId=810&receivingCountryId=${countryCode}&receivingCurrencyId=840&paymentMethod=debitCard&receivingAmount=100000&receivingMethod=cash&paidNotificationEnabled=true`, {
             httpHeader: this.getHttpHeader(),
-            verbose: true,
         })
         console.log("Status code = " + statusCode)
         console.log(data)

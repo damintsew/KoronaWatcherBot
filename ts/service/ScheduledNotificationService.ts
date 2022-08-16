@@ -3,7 +3,7 @@ import {KoronaDao} from "../KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
-import {ThresholdNotificationService} from "../dto/ThresholdNotificationService";
+import {ThresholdNotificationService} from "./ThresholdNotificationService";
 
 
 export class ScheduledNotificationService {

@@ -1,8 +1,8 @@
 import {CronJob} from 'cron';
-import {KoronaDao} from "./KoronaDao";
-import {ThresholdNotificationService} from "./dto/ThresholdNotificationService";
-import {MessageAnouncerService} from "./MessageAnouncerService";
-import {ScheduledNotificationService} from "./service/ScheduledNotificationService";
+import {KoronaDao} from "../KoronaDao";
+import {ThresholdNotificationService} from "./ThresholdNotificationService";
+import {MessageAnouncerService} from "../MessageAnouncerService";
+import {ScheduledNotificationService} from "./ScheduledNotificationService";
 
 export class CronJobService {
 
@@ -47,8 +47,8 @@ export class CronJobService {
         await this.notificationService.process();
 
         console.log("End Call Korona")
-        // await this.messageAnouncerService.persistMessage();
-        // await this.messageAnouncerService.announce();
+        await this.messageAnouncerService.persistMessage();
+        await this.messageAnouncerService.announce();
     }
 
     async hourAction(): Promise<void> {
