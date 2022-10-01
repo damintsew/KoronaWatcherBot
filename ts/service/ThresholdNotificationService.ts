@@ -19,7 +19,12 @@ export class ThresholdNotificationService {
         await this.processCountry("TUR")
         await this.processCountry("GEO")
         await this.processCountry("ISR")
-        await this.processCountry("GRC")
+        // await this.processCountry("GRC")
+    }
+
+    // todo move down
+    private delay(ms: number) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
     }
 
     private async processCountry(countryCode: string) {
@@ -52,12 +57,18 @@ export class ThresholdNotificationService {
             console.log(`Country=${subscription.country} UserId = ${subscription.user.userId} newValue = ${newValue} lastNotifiedValue = ${subscription.lastNotifiedValue} ` +
                 `difference is : ${difference} threshold = ${subscription.notificationThreshold}`)
 
-            if (difference >= subscription.notificationThreshold) {
-                await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
-                subscription.lastNotifiedValue = newValue;
-                await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
+            try {
+                if (difference >= subscription.notificationThreshold) {
+                    await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
+                    subscription.lastNotifiedValue = newValue;
+                    await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
+                }
+            }catch (e) {
+                console.error(e)
             }
         }
+
+        await this.delay(1000)
     }
 
     private async notifyUser(countryCode: string, userId: number, oldValue: number,  newValue: number) {

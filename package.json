@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "dependencies": {
     "cron": "^2.0.0",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.37",
     "node-libcurl": "^2.3.4",
     "pg": "^8.7.3",
     "telegraf": "^4.8.2",

@@ -33,7 +33,8 @@ tg.deleteMyCommands()
         {command: 'subscribe', description: 'Подписаться на уведомления'},
         {command: 'list', description: 'Список подписок'},
         {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
-        {command: 'help', description: 'Список моих возможностей'}
+        {command: 'help', description: 'Список моих возможностей'},
+        {command: 'support', description: 'Вопросы / предложения'}
     ]));
 
 
@@ -181,9 +182,12 @@ bot.command('list', async (ctx) => {
 })
 bot.command('unsubscribe', (ctx) => ctx.scene.enter('unsubscribe-wizard'))
 
-bot.command('help', (ctx) => ctx.reply("/subscribe /list /unsubscribe"))
+bot.command('help', (ctx) => ctx.reply("Доступные команды:\n/subscribe\n/list\n/unsubscribe\n\n" +
+    "За помощью, вопросами и предложениями по работе бота пишите в группу @KoronaWatcherSupportBot"))
+bot.command('support', (ctx) => ctx.reply("За помощью, вопросами и предложениями по работе бота пишите в группу @KoronaWatcherSupportBot"))
 bot.command('start', (ctx) => ctx.reply('Привет!\n Я показываю курсы валют в Золотой Короне.\n' +
-    '/subscribe чтобы подписаться на уведомления. \n/unsubscribe - отписаться. \n/list показывает активные подписки \n/help для помощи'));
+    '/subscribe чтобы подписаться на уведомления. \n/unsubscribe - отписаться. \n/list показывает активные подписки \n/help для помощи\n' +
+    'За помощью, вопросами и предложениями по работе бота пишите в группу @KoronaWatcherSupportBot'));
 
 bot.on('message',
     (ctx) => ctx.reply("Для получения списка команд и моих возможностей введите /help."))
