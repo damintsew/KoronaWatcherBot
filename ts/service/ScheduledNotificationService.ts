@@ -22,6 +22,8 @@ export class ScheduledNotificationService {
         await this.processCountry("GEO")
         await this.processCountry("ISR")
         await this.processCountry("UZB")
+        await this.processCountry("KAZ")
+        await this.processCountry("VNM")
         // await this.processCountry("GRC")
     }
 

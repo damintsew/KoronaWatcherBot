@@ -1,4 +1,7 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {User} from "./User";
+import {JoinTable} from "typeorm/browser";
+import {SendToUser} from "./announcement/SendToUser";
 
 @Entity('announcement')
 export class Announcements {
@@ -18,4 +21,7 @@ export class Announcements {
     @Column()
     timeToSent: Date
 
+    @OneToMany(() => SendToUser, sendToUser => sendToUser.announcement,
+        {cascade: true})
+    sendToUser: SendToUser[]
 }

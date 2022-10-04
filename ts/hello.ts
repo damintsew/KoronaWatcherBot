@@ -110,7 +110,11 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
             return ctx.scene.leave();
 
         } catch (e) {
-            await ctx.reply("Повторите ввод")
+            try {
+                await ctx.reply("Повторите ввод")
+            }catch (e) {
+                console.error(e)
+            }
         }
     });
 

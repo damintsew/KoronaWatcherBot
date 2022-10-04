@@ -5,7 +5,7 @@ import {ds} from "../data-source";
 import {TimeUnit} from "../entity/TimeUnit";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
-import {mapCountry} from "../service/FlagUtilities";
+import {countries, mapCountry} from "../service/FlagUtilities";
 
 export class SubscriptionWizard {
 
@@ -17,20 +17,26 @@ export class SubscriptionWizard {
                 // ctx.scene.session.subscriptionData = new SubscriptionData();
                 // ctx.scene.session.subscriptionData.user = ctx.session.user;
 
+                const keyboard = []
+                for( let c of countries) {
+                    if (c.isActive) {
+                        keyboard.push(Markup.button.callback(c.text, c.code))
+                    }
+                }
+                keyboard.push(Markup.button.callback("Отмена", "cancel"))
+
                 await ctx.replyWithMarkdown('В какую страну перевод?',
-                    Markup.keyboard([
-                        Markup.button.callback('➡️ Турция', 'turkey'),
-                        Markup.button.callback('➡️ Греция', 'greece'),
-                        Markup.button.callback('➡️ Грузия', 'georgia'),
-                        Markup.button.callback('➡️ Израиль', 'georgia'),
-                        Markup.button.callback('➡️ Узбекистан', 'georgia'),
-                        Markup.button.callback('➡️ Добавить страну', 'add_country'),
-                    ]))
+                    Markup.keyboard(keyboard))
                 return ctx.wizard.next()
             },
             async (ctx) => {
                 // @ts-ignore todo remove ignore
-                const countryCode = mapCountry(ctx.message.text)
+                const countryCode = mapCountry(ctx.message?.text)
+                // @ts-ignore todo remove ignore
+                if (ctx.message.text == "Отмена") {
+                    ctx.scene.leave()
+                    return;
+                }
                 // @ts-ignore todo remove ignore
                 if (ctx.message.text == "➡️ Добавить страну" || countryCode == null) {
                     await ctx.reply("Введите название страны: ")

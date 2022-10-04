@@ -8,6 +8,7 @@ import {TimeUnit} from "./entity/TimeUnit";
 import {SubscriptionScheduledData} from "./entity/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "./entity/SubscriptionThresholdData";
 import {ExchangeHistory} from "./entity/ExchangeHistory";
+import {SendToUser} from "./entity/announcement/SendToUser";
 
 export const ds = new DataSource({
     type: "postgres",
@@ -17,7 +18,8 @@ export const ds = new DataSource({
     password: "changeme",
     database: "postgres",
     entities: [
-        User, SubscriptionScheduledData, SubscriptionThresholdData, Announcements, TimeUnit, ExchangeHistory
+        User, SubscriptionScheduledData, SubscriptionThresholdData, Announcements, TimeUnit, ExchangeHistory,
+        SendToUser
     ],
     synchronize: true,
     logging: true

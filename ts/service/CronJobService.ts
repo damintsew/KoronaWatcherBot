@@ -48,12 +48,12 @@ export class CronJobService {
 
         console.log("End Call Korona")
         await this.messageAnouncerService.persistMessage();
-        await this.messageAnouncerService.announce();
     }
 
     async hourAction(): Promise<void> {
         console.log("Hour")
         await this.scheduledNotificationService.process()
+        await this.messageAnouncerService.announce();
     }
 
     stop() {

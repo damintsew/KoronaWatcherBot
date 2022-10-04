@@ -1,26 +1,26 @@
+export enum CountryCode {
+    GEO,
+    TUR,
+    ISR,
+    UZB,
+    GRC
+}
 
-// enum Countries {
-//     GEO = { test: 1}
-// }
+export const countries = [
+    {code: 'GEO', flag: '🇬🇪', text: "Грузия", isActive: true},
+    {code: 'TUR', flag: '🇹🇷', text: "Турция", isActive: true},
+    {code: 'ISR', flag: '🇮🇱', text: "Израиль", isActive: true},
+    {code: 'UZB', flag: '🇺🇿', text: "Узбекистан", isActive: true},
+    {code: 'KAZ', flag: '🇰🇿', text: "Казахстан", isActive: true},
+    {code: 'VNM', flag: '🇻🇳', text: "Вьетнам", isActive: true},
 
-export function mapCountryToFlag(countryCode: string) {
-    const map = {
-        GEO: '🇬🇪',
-        TUR: '🇹🇷',
-        ISR: '🇮🇱',
-        UZB: '🇺🇿',
-        GRC: '🇬🇷'
-    }
-    return map[countryCode];
+    {code: 'GRC', flag: '🇬🇷', text: "Греция", isActive: false}
+]
+
+export function mapCountryToFlag(countryCode: string): string {
+    return countries.find(c => c.code === countryCode)?.flag;
 }
 
 export function mapCountry(countryString: string): string {
-    const map = {
-        "➡️ Турция": "TUR",
-        "➡️ Греция": "GRC",
-        "➡️ Грузия": "GEO",
-        "➡️ Израиль": "ISR",
-        "➡️ Узбекистан": "UZB"
-    }
-    return map[countryString];
+     return countries.find(c => c.text === countryString)?.code
 }
