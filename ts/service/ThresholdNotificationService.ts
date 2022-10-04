@@ -5,6 +5,8 @@ import {KoronaDao} from "../KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
+import {delay} from "../Util";
+import {mapCountryToFlag} from "./FlagUtilities";
 
 
 export class ThresholdNotificationService {
@@ -19,12 +21,8 @@ export class ThresholdNotificationService {
         await this.processCountry("TUR")
         await this.processCountry("GEO")
         await this.processCountry("ISR")
+        await this.processCountry("UZB")
         // await this.processCountry("GRC")
-    }
-
-    // todo move down
-    private delay(ms: number) {
-        return new Promise( resolve => setTimeout(resolve, ms) );
     }
 
     private async processCountry(countryCode: string) {
@@ -68,12 +66,12 @@ export class ThresholdNotificationService {
             }
         }
 
-        await this.delay(1000)
+        await delay(1000)
     }
 
     private async notifyUser(countryCode: string, userId: number, oldValue: number,  newValue: number) {
         const sign = newValue > oldValue ? "⬆️" : "⬇️";
-        const flag = ThresholdNotificationService.mapCountryToFlag(countryCode);
+        const flag = mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`
         console.log("Sending message to user " + userId)
         try {
@@ -93,15 +91,5 @@ export class ThresholdNotificationService {
     private calculateDifference(currentValue: number, newValue: number): number {
         const absDifference = Math.abs(newValue - currentValue) * 100;
         return Math.round(absDifference);
-    }
-
-    public static mapCountryToFlag(countryCode: string) {
-        const map = {
-            GEO: '🇬🇪',
-            TUR: '🇹🇷',
-            ISR: '🇮🇱',
-            GRC: '🇬🇷'
-        }
-        return map[countryCode];
     }
 }

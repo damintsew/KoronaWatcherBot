@@ -12,6 +12,7 @@ import {SubscriptionWizard} from "./wizard/SubscriptionWizard";
 import {SubscriptionThresholdData} from "./entity/SubscriptionThresholdData";
 import {ScheduledNotificationService} from "./service/ScheduledNotificationService";
 import {TimeUnit} from "./entity/TimeUnit";
+import {mapCountryToFlag} from "./service/FlagUtilities";
 
 
 (async function () {
@@ -30,6 +31,7 @@ const subscriptionService = new SubscriptionService();
 let tg = new Telegram(token);
 tg.deleteMyCommands()
     .then(() => tg.setMyCommands([
+        // {command: 'rate', description: 'Показать текущий курс'},
         {command: 'subscribe', description: 'Подписаться на уведомления'},
         {command: 'list', description: 'Список подписок'},
         {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
@@ -56,7 +58,7 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
         if (subscriptions.length > 0) {
             replyLines.push("Подписка по изменению цены:")
             for (let s of subscriptions) {
-                const text = `${i}: ${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`
+                const text = `${i}: ${mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`
                 keyboard.push(Markup.button.text(text))
                 replyLines.push(text)
                 i++;
@@ -70,7 +72,7 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
         if (scheduledSubscriptions.length > 0) {
             replyLines.push("Подписка по времени:")
             for(let s of scheduledSubscriptions) {
-                let text = (`${i}: ${ThresholdNotificationService.mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
+                let text = (`${i}: ${mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
                 replyLines.push(text)
                 keyboard.push(Markup.button.text(text))
                 allSubscriptions.push(s)
@@ -113,8 +115,10 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
     });
 
 const stage = new Scenes.Stage<MyContext>([
-    subscribeWizardService.createSubscriptionWizard(), subscribeWizardService.onChangeCurrencyWizard(),
-    subscribeWizardService.onScheduledTimeWizard(), unsubscribeWizard])
+    subscribeWizardService.createSubscriptionWizard(),
+    subscribeWizardService.onChangeCurrencyWizard(),
+    subscribeWizardService.onScheduledTimeWizard(),
+    unsubscribeWizard])
 
 bot.use(session())
 bot.use(stage.middleware())
@@ -150,6 +154,7 @@ bot.use(async (ctx, next) => {
     return next()
 })
 
+bot.command('rate', (ctx) => ctx.scene.enter('get-rate-wizard'))
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
 bot.command('list', async (ctx) => {
     function concatDates(timeUnits: TimeUnit[]) {
@@ -163,7 +168,7 @@ bot.command('list', async (ctx) => {
     if (subscriptionsByThreshold.length > 0) {
         lines.push( "Подписка по изменению цены:")
         lines.push(...subscriptionsByThreshold
-            .map(s => ` - ${ThresholdNotificationService.mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`))
+            .map(s => ` - ${mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`))
 
         lines.push("")
     }
@@ -171,7 +176,7 @@ bot.command('list', async (ctx) => {
     if (scheduledSubscriptions.length > 0) {
         lines.push("Подписка по времени:")
         for(let s of scheduledSubscriptions) {
-            lines.push(`\t - ${ThresholdNotificationService.mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
+            lines.push(`\t - ${mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
         }
         lines.push("")
     }

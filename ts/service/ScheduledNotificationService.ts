@@ -3,7 +3,7 @@ import {KoronaDao} from "../KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
-import {ThresholdNotificationService} from "./ThresholdNotificationService";
+import {mapCountryToFlag} from "./FlagUtilities";
 import moment, {ISO_8601} from "moment-timezone";
 
 
@@ -21,6 +21,7 @@ export class ScheduledNotificationService {
         await this.processCountry("TUR")
         await this.processCountry("GEO")
         await this.processCountry("ISR")
+        await this.processCountry("UZB")
         // await this.processCountry("GRC")
     }
 
@@ -58,7 +59,7 @@ export class ScheduledNotificationService {
 
     private async notifyUser(countryCode: string, userId: number, oldValue: number, newValue: number) {
         const sign = ScheduledNotificationService.getSign(newValue, oldValue);
-        const flag = ThresholdNotificationService.mapCountryToFlag(countryCode);
+        const flag = mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`
         console.log("Sending message to user " + userId)
         try {
@@ -78,15 +79,5 @@ export class ScheduledNotificationService {
     private calculateDifference(currentValue: number, newValue: number): number {
         const absDifference = Math.abs(newValue - currentValue) * 100;
         return Math.round(absDifference);
-    }
-
-    public static mapCountryToFlag(countryCode: string) {
-        const map = {
-            GEO: '🇬🇪',
-            TUR: '🇹🇷',
-            ISR: '🇮🇱',
-            GRC: '🇬🇷'
-        }
-        return map[countryCode];
     }
 }

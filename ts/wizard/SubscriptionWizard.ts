@@ -5,6 +5,7 @@ import {ds} from "../data-source";
 import {TimeUnit} from "../entity/TimeUnit";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
+import {mapCountry} from "../service/FlagUtilities";
 
 export class SubscriptionWizard {
 
@@ -22,13 +23,14 @@ export class SubscriptionWizard {
                         Markup.button.callback('➡️ Греция', 'greece'),
                         Markup.button.callback('➡️ Грузия', 'georgia'),
                         Markup.button.callback('➡️ Израиль', 'georgia'),
+                        Markup.button.callback('➡️ Узбекистан', 'georgia'),
                         Markup.button.callback('➡️ Добавить страну', 'add_country'),
                     ]))
                 return ctx.wizard.next()
             },
             async (ctx) => {
                 // @ts-ignore todo remove ignore
-                const countryCode = this.mapCountry(ctx.message.text)
+                const countryCode = mapCountry(ctx.message.text)
                 // @ts-ignore todo remove ignore
                 if (ctx.message.text == "➡️ Добавить страну" || countryCode == null) {
                     await ctx.reply("Введите название страны: ")
@@ -208,7 +210,7 @@ export class SubscriptionWizard {
             ds.getRepository(SubscriptionThresholdData)
                 .createQueryBuilder("findSubscriptions")
                 .innerJoinAndSelect("findSubscriptions.user", "userJoin")
-                .where("userJoin.userId = :userId AND coutry = :countryCode",
+                .where("userJoin.userId = :userId AND country = :countryCode",
                     { userId: subscription.user.userId, countryCode: subscription.country })
                 .delete()
             await this.saveSubscription(subscription)
@@ -218,16 +220,6 @@ export class SubscriptionWizard {
         })
 
         return stepHandler;
-    }
-
-    private mapCountry(countryString: string): string {
-        const map = {
-            "➡️ Турция": "TUR",
-            "➡️ Греция": "GRC",
-            "➡️ Грузия": "GEO",
-            "➡️ Израиль": "ISR"
-        }
-        return map[countryString];
     }
 
     private filterSelectedItems(timeSelectionButtons) {
