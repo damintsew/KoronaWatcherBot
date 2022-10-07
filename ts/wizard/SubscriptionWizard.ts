@@ -33,6 +33,11 @@ export class SubscriptionWizard {
                 // @ts-ignore todo remove ignore
                 const countryCode = mapCountry(ctx.message?.text)
                 // @ts-ignore todo remove ignore
+                if (ctx.message == null || ctx.message.text == null) {
+                    await ctx.reply("Повтрите ввод")
+                    return;
+                }
+                // @ts-ignore todo remove ignore
                 if (ctx.message.text == "Отмена") {
                     ctx.scene.leave()
                     return;

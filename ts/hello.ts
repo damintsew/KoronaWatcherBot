@@ -13,6 +13,8 @@ import {SubscriptionThresholdData} from "./entity/SubscriptionThresholdData";
 import {ScheduledNotificationService} from "./service/ScheduledNotificationService";
 import {TimeUnit} from "./entity/TimeUnit";
 import {mapCountryToFlag} from "./service/FlagUtilities";
+import {ExchangeRatesDao} from "./dao/ExchangeRatesDao";
+import {ExchangeRatesService} from "./service/ExchangeRatesService";
 
 
 (async function () {
@@ -27,11 +29,13 @@ if (token === undefined) {
 const bot = new Telegraf<MyContext>(token)
 
 const subscriptionService = new SubscriptionService();
+const exchangeRatesDao = new ExchangeRatesDao();
+const exchangeRatesService = new ExchangeRatesService(exchangeRatesDao);
 
 let tg = new Telegram(token);
 tg.deleteMyCommands()
     .then(() => tg.setMyCommands([
-        // {command: 'rate', description: 'Показать текущий курс'},
+        {command: 'rates', description: 'Показать текущий курс'},
         {command: 'subscribe', description: 'Подписаться на уведомления'},
         {command: 'list', description: 'Список подписок'},
         {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
@@ -158,7 +162,9 @@ bot.use(async (ctx, next) => {
     return next()
 })
 
-bot.command('rate', (ctx) => ctx.scene.enter('get-rate-wizard'))
+bot.command('rates', (ctx) => {
+    exchangeRatesService.getAllRates(ctx)
+})
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
 bot.command('list', async (ctx) => {
     function concatDates(timeUnits: TimeUnit[]) {
