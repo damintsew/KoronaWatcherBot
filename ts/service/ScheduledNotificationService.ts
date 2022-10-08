@@ -3,7 +3,7 @@ import {KoronaDao} from "../KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
-import {mapCountryToFlag} from "./FlagUtilities";
+import {countries, mapCountryToFlag} from "./FlagUtilities";
 import moment, {ISO_8601} from "moment-timezone";
 
 
@@ -18,21 +18,19 @@ export class ScheduledNotificationService {
     }
 
     async process() {
-        await this.processCountry("TUR")
-        await this.processCountry("GEO")
-        await this.processCountry("ISR")
-        await this.processCountry("UZB")
-        await this.processCountry("KAZ")
-        await this.processCountry("VNM")
-        // await this.processCountry("GRC")
+        for (const country of countries) {
+            if (country.isActive) {
+                await this.processCountry(country.code)
+            }
+        }
     }
 
     private async processCountry(countryCode: string) {
         const date = moment.tz('Turkey')
 
-        if (date.isoWeekday() >= 6) {
-            return;
-        }
+        // if (date.isoWeekday() >= 6) {
+        //     return;
+        // }
 
         const currentHour = date.hours()
         const subscriptions = await this.subscriptionService.getScheduledSubscriptionsByCountryAndHour(countryCode, currentHour);

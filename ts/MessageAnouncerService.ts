@@ -67,7 +67,7 @@ export class MessageAnouncerService {
     }
 
     async persistMessage() {
-        const messageId = 21;
+        const messageId = 23;
         let existingMgs
         try {
             existingMgs = await ds.manager.findOne(Announcements, {where: {messageId: messageId}});
@@ -82,9 +82,11 @@ export class MessageAnouncerService {
         const announsment = new Announcements();
         announsment.messageId = messageId;
         announsment.isSent = false;
-        announsment.timeToSent = new Date('7 Oct 2022 09:59:00 GMT+0300');
+        announsment.timeToSent = new Date('9 Oct 2022 09:59:00 GMT+0300');
         announsment.text = "Друзья! \n" +
-            "Появилась команда /rates для получения последних данных по всем доступны странам.\n" +
+            "Добавлены 🇲🇩 Молдова / 🇹🇯Таджикистан / 🇰🇬Киргизия / 🇦🇿Азербайджан / 🇰🇷Корея и 🇧🇾Белоруссия.\n" +
+            "Теперь все страны, которые доступны на сайте доступны для подписки. Если команда /rates стала не читаемая " +
+            "и надо добавить названия тран, то напишите мне в /support\n" +
             "В процессе работа по получению данных по другим валютам\n" +
             "Всем спасибо!🕊🕊🕊\n\n" +
             "По проблемам, вопросам и предложениям по работе бота - пишите в группу https://t.me/KoronaWatcherSupportBot ";

@@ -15,6 +15,7 @@ import {TimeUnit} from "./entity/TimeUnit";
 import {mapCountryToFlag} from "./service/FlagUtilities";
 import {ExchangeRatesDao} from "./dao/ExchangeRatesDao";
 import {ExchangeRatesService} from "./service/ExchangeRatesService";
+import {GarantexDao} from "./dao/GarantexDao";
 
 
 (async function () {
@@ -40,7 +41,8 @@ tg.deleteMyCommands()
         {command: 'list', description: 'Список подписок'},
         {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
         {command: 'help', description: 'Список моих возможностей'},
-        {command: 'support', description: 'Вопросы / предложения'}
+        {command: 'support', description: 'Вопросы / предложения'},
+        {command: 'test', description: 'Test'}
     ]));
 
 
@@ -165,6 +167,12 @@ bot.use(async (ctx, next) => {
 bot.command('rates', (ctx) => {
     exchangeRatesService.getAllRates(ctx)
 })
+
+const garantexDao = new GarantexDao();
+bot.command('test', (ctx) => {
+    garantexDao.test()
+})
+
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
 bot.command('list', async (ctx) => {
     function concatDates(timeUnits: TimeUnit[]) {

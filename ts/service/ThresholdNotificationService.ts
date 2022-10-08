@@ -6,7 +6,7 @@ import {ds} from "../data-source";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {delay} from "../Util";
-import {mapCountryToFlag} from "./FlagUtilities";
+import {countries, mapCountryToFlag} from "./FlagUtilities";
 
 
 export class ThresholdNotificationService {
@@ -18,13 +18,11 @@ export class ThresholdNotificationService {
     }
 
     async process() {
-        await this.processCountry("TUR")
-        await this.processCountry("GEO")
-        await this.processCountry("ISR")
-        await this.processCountry("UZB")
-        await this.processCountry("KAZ")
-        await this.processCountry("VNM")
-        // await this.processCountry("GRC")
+        for (const country of countries) {
+            if (country.isActive) {
+                await this.processCountry(country.code)
+            }
+        }
     }
 
     private async processCountry(countryCode: string) {
@@ -63,8 +61,11 @@ export class ThresholdNotificationService {
                     subscription.lastNotifiedValue = newValue;
                     await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
                 }
-            }catch (e) {
+            } catch (e) {
                 console.error(e)
+                // if () {
+
+                // }
             }
         }
 
