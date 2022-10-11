@@ -12,7 +12,7 @@ export class ExchangeRatesService {
     }
 
     async getAllRates(ctx) {
-        const rates = await this.exchangeDao.getAllRates()
+        const rates = await this.exchangeDao.getAllKoronaRates()
 
         const messages = []
         if (rates.length > 0) {
@@ -22,7 +22,19 @@ export class ExchangeRatesService {
                 messages.push(msg);
             }
         } else {
-            messages.push("Что-то сломалось. Нет данных по курсам валют. Пишите в /support")
+            messages.push("Что-то сломалось. По Короне нет данных по курсам валют. Пишите в /support")
+        }
+
+        const garantex = await this.exchangeDao.getAllGarantexRates()
+
+        if (garantex.length > 0) {
+            messages.push(`\nGarantex на: ${this.formatDate(rates[0].dateTime)}`)
+            for (const rate of garantex) {
+                const msg = `${rate.market}  ${rate.value}`
+                messages.push(msg);
+            }
+        } else {
+            messages.push("Что-то сломалось. По Garantex нет данных по курсам валют. Пишите в /support")
         }
 
         ctx.reply(messages.join("\n"))

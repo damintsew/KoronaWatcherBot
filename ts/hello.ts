@@ -16,6 +16,9 @@ import {mapCountryToFlag} from "./service/FlagUtilities";
 import {ExchangeRatesDao} from "./dao/ExchangeRatesDao";
 import {ExchangeRatesService} from "./service/ExchangeRatesService";
 import {GarantexDao} from "./dao/GarantexDao";
+import appServer from "./server/ExpressServer";
+import ExpressServer from "./server/ExpressServer";
+import {GarantexService} from "./service/GarantexService";
 
 
 (async function () {
@@ -32,6 +35,9 @@ const bot = new Telegraf<MyContext>(token)
 const subscriptionService = new SubscriptionService();
 const exchangeRatesDao = new ExchangeRatesDao();
 const exchangeRatesService = new ExchangeRatesService(exchangeRatesDao);
+
+const garantexDao = new GarantexDao();
+const garantexService = new GarantexService(exchangeRatesDao, garantexDao);
 
 let tg = new Telegram(token);
 tg.deleteMyCommands()
@@ -168,10 +174,10 @@ bot.command('rates', (ctx) => {
     exchangeRatesService.getAllRates(ctx)
 })
 
-const garantexDao = new GarantexDao();
-bot.command('test', (ctx) => {
-    garantexDao.test()
-})
+
+// bot.command('test', (ctx) => {
+//     garantexDao.getLatestTrades()
+// })
 
 bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
 bot.command('list', async (ctx) => {
@@ -220,7 +226,10 @@ bot.launch()
 const notificationService = new ThresholdNotificationService(tg)
 const mas = new MessageAnouncerService(tg)
 const scheduledNotificationService = new ScheduledNotificationService(tg, subscriptionService)
-const cron = new CronJobService(notificationService, mas, scheduledNotificationService);
+const cron = new CronJobService(notificationService, mas, scheduledNotificationService, garantexService);
+
+const expressServer = new ExpressServer(exchangeRatesDao);
+expressServer.init()
 
 // Enable graceful stop
 process.once('SIGINT', () => {

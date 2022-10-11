@@ -1,16 +1,22 @@
-import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, TableInheritance, Unique} from "typeorm";
+import {Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, TableInheritance, Unique} from "typeorm";
 import {User} from "./User";
 import {TimeUnit} from "./TimeUnit";
 
 @Entity('exchange_history')
-// @TableInheritance({ column: { type: "varchar", name: "type", default: "subscription_threshold_data" } })
 export class ExchangeHistory {
 
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    country: string
+    @Column({ nullable: false, default: "KORONA"})
+    type: string
+
+    @Column({nullable: true})
+    market: string //garantex
+
+    @Index("country_ind")
+    @Column({nullable: true})
+    country: string //corona
 
     @Column()
     currency: string
