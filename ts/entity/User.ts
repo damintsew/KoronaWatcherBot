@@ -1,4 +1,5 @@
-import {Entity, PrimaryGeneratedColumn, Column, PrimaryColumn} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, OneToMany} from "typeorm";
+import {PaymentSubscription} from "./PaymentSubscription";
 
 @Entity()
 export class User {
@@ -20,5 +21,9 @@ export class User {
 
     @Column({nullable: true})
     isAdmin: boolean
+
+    @OneToMany(() => PaymentSubscription,
+        subscr => subscr.user)
+    subscriptions: PaymentSubscription[]
 
 }

@@ -1,31 +1,77 @@
-import {Composer, Markup, Scenes} from "telegraf";
-import {MyContext} from "../Domain";
+// noinspection TypeScriptValidateJSTypes
+
+import {Composer, Markup, Middleware, Scenes} from "telegraf";
+import {MyContext, MyWizardSession} from "../Domain";
 import {SubscriptionData} from "../entity/SubscriptionData";
 import {ds} from "../data-source";
 import {TimeUnit} from "../entity/TimeUnit";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {countries, mapCountry} from "../service/FlagUtilities";
+import {WizardContext, WizardContextWizard, WizardSessionData} from "telegraf/typings/scenes";
 
 export class SubscriptionWizard {
+
+    initialSelectionWizard(): Scenes.WizardScene<MyContext> {
+        return new Scenes.WizardScene<MyContext>("platform-selection",
+            async (ctx: MyContext) => {
+                await ctx.replyWithMarkdown(
+                    'Выберите подписку',
+                    Markup.keyboard([
+                        this.keyboard("Подписка на курс: Золотая Корона"),
+                        this.keyboard("Подписка на курс: Garantex"),
+                        this.keyboard("Получение Спредов ЗК + Garantex"),
+                        this.keyboard("Отмена")
+                    ]))
+                return ctx.wizard.next()
+            },
+            async (ctx: MyContext) => {
+                // @ts-ignore todo remove ignore
+                if (ctx.message == null || ctx.message.text == null) {
+                    await ctx.reply("Повтрите ввод")
+                    return;
+                }
+                // @ts-ignore todo remove ignore
+                if (ctx.message.text == "Отмена") {
+                    await ctx.reply("Отменяю.", Markup.removeKeyboard())
+                    ctx.scene.leave()
+                    return;
+                }
+
+                // @ts-ignore todo remove ignore
+                if (ctx.message.text === "Подписка на курс: Золотая Корона") {
+                    ctx.scene.state["subscription_type"] = "KORONA"
+                    ctx.scene.enter("korona-subscribe-wizard")
+                }
+
+                // @ts-ignore todo remove ignore
+                if (ctx.message.text === "Подписка на курс: Garantex") {
+                    ctx.scene.state["subscription_type"] = "GARANTEX"
+                    ctx.scene.enter("payment-validation-wizard")
+                }
+
+                return ctx.wizard.next()
+            })
+    }
+
+
 
     createSubscriptionWizard(): Scenes.WizardScene<MyContext> {
 
         return new Scenes.WizardScene<MyContext>(
-            'subscribe-wizard',
+            'korona-subscribe-wizard',
             async (ctx) => {
-                // ctx.scene.session.subscriptionData = new SubscriptionData();
-                // ctx.scene.session.subscriptionData.user = ctx.session.user;
 
                 const keyboard = []
-                for( let c of countries) {
+                for (let c of countries) {
                     if (c.isActive) {
                         keyboard.push(Markup.button.callback(c.text, c.code))
                     }
                 }
                 keyboard.push(Markup.button.callback("Отмена", "cancel"))
 
-                await ctx.replyWithMarkdown('В какую страну перевод?',
+                await ctx.replyWithMarkdown(
+                    'В какую страну перевод?',
                     Markup.keyboard(keyboard))
                 return ctx.wizard.next()
             },
@@ -39,11 +85,12 @@ export class SubscriptionWizard {
                 }
                 // @ts-ignore todo remove ignore
                 if (ctx.message.text == "Отмена") {
+                    await ctx.reply("Отменяю.", Markup.removeKeyboard())
                     ctx.scene.leave()
                     return;
                 }
                 // @ts-ignore todo remove ignore
-                if (ctx.message.text == "➡️ Добавить страну" || countryCode == null) {
+                if (countryCode == null) {
                     await ctx.reply("Введите название страны: ")
                     return;
                 }
@@ -107,7 +154,7 @@ export class SubscriptionWizard {
             let selectedButton = ctx.scene.session.timeSelectionButtons[selectedTime];
             selectedButton.selected = !selectedButton.selected;
 
-            const buttons = this.processSelectedBUttons(ctx.scene.session.timeSelectionButtons)
+            const buttons = this.processSelectedButtons(ctx.scene.session.timeSelectionButtons)
             buttons.push(Markup.button.callback("Сохранить", "next"))
 
             ctx.editMessageText("Выберите часы, в которые вы хотели бы получать уведомления от бота.",
@@ -132,7 +179,7 @@ export class SubscriptionWizard {
                 .innerJoinAndSelect("getScheduledSubscriptions.user", "user")
                 .innerJoinAndSelect("getScheduledSubscriptions.triggerTime", "trigger")
                 .where("user.userId = :userId AND country = :countryCode",
-                    { userId: subscriptionToCreate.user.userId, countryCode: subscriptionToCreate.country })
+                    {userId: subscriptionToCreate.user.userId, countryCode: subscriptionToCreate.country})
                 .getMany()
             for (let s of existingSubscriptions) {
                 await ds.manager.remove(s.triggerTime)
@@ -152,7 +199,7 @@ export class SubscriptionWizard {
 
                 ctx.scene.session.timeSelectionButtons = this.createButtonsConfig()
 
-                const buttons = this.processSelectedBUttons(ctx.scene.session.timeSelectionButtons)
+                const buttons = this.processSelectedButtons(ctx.scene.session.timeSelectionButtons)
                 buttons.push(Markup.button.callback("Сохранить", "next"))
 
                 await ctx.replyWithMarkdown('Выберите часы, в которые вы хотели бы получать уведомления от бота.',
@@ -163,7 +210,7 @@ export class SubscriptionWizard {
         );
     }
 
-    private processSelectedBUttons(timeSelectionButtons) {
+    private processSelectedButtons(timeSelectionButtons) {
         const buttons = []
 
         for (let key in timeSelectionButtons) {
@@ -202,7 +249,9 @@ export class SubscriptionWizard {
             1: "1 копейка",
             5: "5 копеек",
             10: "10 копеек",
+            25: "25 копеек",
             50: "50 копеек",
+            75: "75 копеек",
             100: "1 рубль"
         }
 
@@ -222,7 +271,7 @@ export class SubscriptionWizard {
                 .createQueryBuilder("findSubscriptions")
                 .innerJoinAndSelect("findSubscriptions.user", "userJoin")
                 .where("userJoin.userId = :userId AND country = :countryCode",
-                    { userId: subscription.user.userId, countryCode: subscription.country })
+                    {userId: subscription.user.userId, countryCode: subscription.country})
                 .delete()
             await this.saveSubscription(subscription)
             await ctx.reply(replyText, Markup.removeKeyboard())
@@ -253,5 +302,9 @@ export class SubscriptionWizard {
         } catch (e) {
             console.log("This subscription already exists", e)
         }
+    }
+
+    private keyboard(text: string) {
+        return Markup.button.callback(text, "")
     }
 }
