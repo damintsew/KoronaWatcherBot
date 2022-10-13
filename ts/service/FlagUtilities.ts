@@ -18,7 +18,7 @@ export const countries = [
     {code: 'KGZ', flag: '🇰🇬', text: "Киргизия", isActive: true},
     {code: 'AZE', flag: '🇦🇿', text: "Азербайджан", isActive: true},
     {code: 'KOR', flag: '🇰🇷', text: "Корея", isActive: true},
-    {code: 'KOR', flag: '🇧🇾', text: "Белоруссия", isActive: true},
+    {code: 'BLR', flag: '🇧🇾', text: "Белоруссия", isActive: true},
 
     {code: 'GRC', flag: '🇬🇷', text: "Греция", isActive: false}
 ]

@@ -1,6 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 import {Announcements} from "../Announcements";
-import {User} from "../User";
+import {LocalUser} from "../LocalUser";
 
 @Entity('send_to_user')
 export class SendToUser {
@@ -11,8 +11,8 @@ export class SendToUser {
     @ManyToOne(() => Announcements, (ann) => ann.messageId)
     announcement!: Announcements
 
-    @ManyToOne(() => User, (user) => user.userId)
-    user!: User
+    @ManyToOne(() => LocalUser, (user) => user.userId)
+    user!: LocalUser
 
     @Column()
     date!: Date

@@ -1,8 +1,8 @@
 import {Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, OneToMany} from "typeorm";
 import {PaymentSubscription} from "./PaymentSubscription";
 
-@Entity()
-export class User {
+@Entity("user")
+export class LocalUser {
 
     @PrimaryColumn({type: "bigint"})
     userId: number

@@ -296,8 +296,6 @@ export class SubscriptionWizard {
 
     private async saveSubscription(subscriptionData: SubscriptionData) {
         try {
-            await ds.manager.getRepository(SubscriptionThresholdData).createQueryBuilder()
-                .where({})
             await ds.manager.save(subscriptionData);
         } catch (e) {
             console.log("This subscription already exists", e)

@@ -1,5 +1,5 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique} from "typeorm";
-import {User} from "./User";
+import {LocalUser} from "./LocalUser";
 
 @Entity('payment_subscription')
 @Unique("constraint_unique_payment_subscription", ['type', "user", "trial"])
@@ -8,8 +8,8 @@ export class PaymentSubscription {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User)
-    user: User
+    @ManyToOne(() => LocalUser)
+    user: LocalUser
 
     @Column({nullable: false})
     startDate: Date

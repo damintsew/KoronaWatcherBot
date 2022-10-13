@@ -1,5 +1,5 @@
 import {createConnection, DataSource} from "typeorm";
-import {User} from "./entity/User";
+import {LocalUser} from "./entity/LocalUser";
 import {Connection} from "typeorm/connection/Connection";
 import {SubscriptionData} from "./entity/SubscriptionData";
 import {env} from 'node:process';
@@ -19,7 +19,7 @@ export const ds = new DataSource({
     password: "changeme",
     database: "postgres",
     entities: [
-        User, SubscriptionScheduledData, SubscriptionThresholdData, Announcements, TimeUnit, ExchangeHistory,
+        LocalUser, SubscriptionScheduledData, SubscriptionThresholdData, Announcements, TimeUnit, ExchangeHistory,
         SendToUser, PaymentSubscription
     ],
     synchronize: true,

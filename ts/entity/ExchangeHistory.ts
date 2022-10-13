@@ -1,5 +1,5 @@
 import {Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, TableInheritance, Unique} from "typeorm";
-import {User} from "./User";
+import {LocalUser} from "./LocalUser";
 import {TimeUnit} from "./TimeUnit";
 
 @Entity('exchange_history')

@@ -1,4 +1,4 @@
-import {User} from "./entity/User";
+import {LocalUser} from "./entity/LocalUser";
 import {Equal, getManager} from "typeorm";
 import {Announcements} from "./entity/Announcements";
 import {Telegram} from "telegraf";
@@ -27,7 +27,7 @@ export class MessageAnouncerService {
             return;
         }
 
-        const users = await ds.manager.find(User);
+        const users = await ds.manager.find(LocalUser);
 
         for (let a of announcements) {
             if (a.timeToSent < new Date()) {

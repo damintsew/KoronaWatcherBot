@@ -1,7 +1,7 @@
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionData} from "../entity/SubscriptionData";
 import {Context, SessionFlavor} from "grammy";
-import {User} from "../entity/User";
+import {LocalUser} from "../entity/LocalUser";
 
 
 export interface SessionData {
@@ -12,5 +12,5 @@ export interface SessionData {
 }
 
 export interface NewContext extends Context, SessionFlavor<SessionData> {
-    user: User
+    user: LocalUser
 }

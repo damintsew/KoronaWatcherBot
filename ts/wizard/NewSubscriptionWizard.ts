@@ -4,6 +4,7 @@ import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {NewContext} from "../bot_config/Domain2";
+import {subscriptionService} from "../DiContainer";
 
 /** This is how the dishes look that this bot is managing */
 interface Dish { //todo rename
@@ -11,7 +12,6 @@ interface Dish { //todo rename
     id: string,
     selected: boolean
 }
-
 
 const mainMenu = new Menu<NewContext>('country-selection-menu')
 mainMenu.dynamic(() => {
@@ -131,6 +131,7 @@ scheduledMenu.dynamic(ctx => {
                         subscriptionData.user = ctx.user
 
                         console.log(subscriptionData)
+                        await subscriptionService.saveSubscription(subscriptionData)
                         await ctx.reply("Подписка успешно сохранена")
                         return ctx.menu.close()
                     })))
@@ -153,12 +154,14 @@ function createDishMenu(text: string, payload: string) {
                 }
                 ctx.session.subscriptionData.user = ctx.user
 
-                console.log(ctx.session.subscriptionData)
                 ctx.session.message += " " + text
 
                 await ctx.editMessageText(ctx.session.message, {
                     parse_mode: 'HTML',
                 })
+                console.log(ctx.session.subscriptionData)
+                await subscriptionService.saveSubscription(ctx.session.subscriptionData)
+
                 await ctx.reply("Подписка успешно сохранена")
                 return ctx.menu.close()
             }
@@ -205,5 +208,4 @@ mainMenu.register(dishMenu)
 mainMenu.register(threshHoldMenu)
 mainMenu.register(scheduledMenu)
 
-
-export default mainMenu
+export {mainMenu}

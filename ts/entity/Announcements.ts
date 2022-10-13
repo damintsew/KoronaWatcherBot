@@ -1,5 +1,5 @@
 import {Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
-import {User} from "./User";
+import {LocalUser} from "./LocalUser";
 import {JoinTable} from "typeorm/browser";
 import {SendToUser} from "./announcement/SendToUser";
 

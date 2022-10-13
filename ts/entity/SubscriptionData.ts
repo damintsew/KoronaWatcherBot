@@ -1,5 +1,5 @@
 import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, TableInheritance, Unique} from "typeorm";
-import {User} from "./User";
+import {LocalUser} from "./LocalUser";
 
 export abstract class SubscriptionData {
 
@@ -9,6 +9,6 @@ export abstract class SubscriptionData {
     @Column()
     country: string
 
-    @ManyToOne(() => User)
-    user: User
+    @ManyToOne(() => LocalUser)
+    user: LocalUser
 }

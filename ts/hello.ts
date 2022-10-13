@@ -1,6 +1,6 @@
 import {Composer, Markup, Scenes, session, Telegraf, Telegram} from 'telegraf'
 import {MyContext} from "./Domain";
-import {User} from "./entity/User";
+import {LocalUser} from "./entity/LocalUser";
 import {ds} from "./data-source";
 import {SubscriptionData} from "./entity/SubscriptionData";
 import {CronJobService} from "./service/CronJobService";
@@ -157,7 +157,7 @@ bot.use(async (ctx, next) => {
 
         const userFromDB = await userDao.getUserWithSubscriptions(from.id);
         if (userFromDB == null) {
-            const newUser = new User();
+            const newUser = new LocalUser();
 
             newUser.userId = from.id
             // @ts-ignore
@@ -189,35 +189,7 @@ bot.command('rates', (ctx) => {
 // })
 
 bot.command('subscribe', (ctx) => ctx.scene.enter('platform-selection'))
-bot.command('list', async (ctx) => {
-    function concatDates(timeUnits: TimeUnit[]) {
-        return timeUnits.map(time => time.timeHours).join(",")
-    }
 
-    let subscriptionsByThreshold = await subscriptionService.getThresholdSubscriptionsByUser(ctx.session.user.userId)
-    const lines = []
-    lines.push("Активные подписки:")
-
-    if (subscriptionsByThreshold.length > 0) {
-        lines.push( "Подписка по изменению цены:")
-        lines.push(...subscriptionsByThreshold
-            .map(s => ` - ${mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`))
-
-        lines.push("")
-    }
-    let scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.session.user.userId)
-    if (scheduledSubscriptions.length > 0) {
-        lines.push("Подписка по времени:")
-        for(let s of scheduledSubscriptions) {
-            lines.push(`\t - ${mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
-        }
-        lines.push("")
-    }
-
-    lines.push("Чтобы отписаться команда /unsubscribe")
-
-    ctx.reply(lines.join("\n"))
-})
 bot.command('unsubscribe', (ctx) => ctx.scene.enter('unsubscribe-wizard'))
 
 bot.command('help', (ctx) => ctx.reply("Доступные команды:\n/subscribe\n/list\n/unsubscribe\n\n" +

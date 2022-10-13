@@ -1,5 +1,5 @@
 import {ChildEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique} from "typeorm";
-import {User} from "./User";
+import {LocalUser} from "./LocalUser";
 import {TimeUnit} from "./TimeUnit";
 import {SubscriptionData} from "./SubscriptionData";
 

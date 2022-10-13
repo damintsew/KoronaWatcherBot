@@ -1,6 +1,6 @@
 import {Context, Scenes} from "telegraf";
 import {SubscriptionData} from "./entity/SubscriptionData";
-import {User} from "./entity/User";
+import {LocalUser} from "./entity/LocalUser";
 import {SubscriptionThresholdData} from "./entity/SubscriptionThresholdData";
 
 /**
@@ -51,5 +51,5 @@ export interface MyWizardSession extends Scenes.WizardSessionData {
 export interface MySession extends Scenes.WizardSession<MyWizardSession> {
     // will be available under `ctx.session.isUserSaved`
     isUserSaved: boolean
-    user: User
+    user: LocalUser
 }
