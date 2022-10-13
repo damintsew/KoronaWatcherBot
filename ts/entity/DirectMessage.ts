@@ -17,10 +17,4 @@ export class DirectMessage {
 
     @Column()
     text: string;
-    //
-    // @Column()
-    // lastName: string;
-
-
-
 }

@@ -19,6 +19,8 @@ import {GarantexDao} from "./dao/GarantexDao";
 import appServer from "./server/ExpressServer";
 import ExpressServer from "./server/ExpressServer";
 import {GarantexService} from "./service/GarantexService";
+import {UserDao} from "./dao/UserDao";
+import {PaymentValidationWizard} from "./wizard/PaymentValidationWizard";
 
 
 (async function () {
@@ -31,6 +33,8 @@ if (token === undefined) {
 }
 
 const bot = new Telegraf<MyContext>(token)
+
+const userDao = new UserDao()
 
 const subscriptionService = new SubscriptionService();
 const exchangeRatesDao = new ExchangeRatesDao();
@@ -47,16 +51,17 @@ tg.deleteMyCommands()
         {command: 'list', description: 'Список подписок'},
         {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
         {command: 'help', description: 'Список моих возможностей'},
-        {command: 'support', description: 'Вопросы / предложения'},
-        {command: 'test', description: 'Test'}
+        {command: 'support', description: 'Вопросы / предложения'}
+        // {command: 'test', description: 'Test'}
     ]));
 
 
 const subscribeWizardService = new SubscriptionWizard();
 
+// noinspection TypeScriptValidateJSTypes
 const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
     'unsubscribe-wizard',
-    async (ctx) => {
+    async (ctx: MyContext) => {
         function concatDates(timeUnits: TimeUnit[]) {
             return timeUnits.map(time => time.timeHours).join(",")
         }
@@ -130,10 +135,14 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
         }
     });
 
+const psw = new PaymentValidationWizard();
+
 const stage = new Scenes.Stage<MyContext>([
     subscribeWizardService.createSubscriptionWizard(),
     subscribeWizardService.onChangeCurrencyWizard(),
     subscribeWizardService.onScheduledTimeWizard(),
+    subscribeWizardService.initialSelectionWizard(),
+    psw.paymentValidationWizard(),
     unsubscribeWizard])
 
 bot.use(session())
@@ -146,7 +155,7 @@ bot.use(async (ctx, next) => {
         }
         const from = ctx?.message?.from;
 
-        const userFromDB = await ds.manager.findOneBy(User, {userId: from.id});
+        const userFromDB = await userDao.getUserWithSubscriptions(from.id);
         if (userFromDB == null) {
             const newUser = new User();
 
@@ -179,7 +188,7 @@ bot.command('rates', (ctx) => {
 //     garantexDao.getLatestTrades()
 // })
 
-bot.command('subscribe', (ctx) => ctx.scene.enter('subscribe-wizard'))
+bot.command('subscribe', (ctx) => ctx.scene.enter('platform-selection'))
 bot.command('list', async (ctx) => {
     function concatDates(timeUnits: TimeUnit[]) {
         return timeUnits.map(time => time.timeHours).join(",")

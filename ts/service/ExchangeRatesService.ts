@@ -16,7 +16,7 @@ export class ExchangeRatesService {
 
         const messages = []
         if (rates.length > 0) {
-            messages.push(`Курсы валют на: ${this.formatDate(rates[0].dateTime)}`)
+            messages.push(`Курсы валют в Короне на: ${this.formatDate(rates[0].dateTime)}`)
             for (const rate of rates) {
                 const msg = `${mapCountryToFlag(rate.country)}  ${rate.currency}  ${rate.value}`
                 messages.push(msg);
@@ -28,7 +28,7 @@ export class ExchangeRatesService {
         const garantex = await this.exchangeDao.getAllGarantexRates()
 
         if (garantex.length > 0) {
-            messages.push(`\nGarantex на: ${this.formatDate(rates[0].dateTime)}`)
+            messages.push(`\nGarantex на: ${this.formatDate(garantex[0].dateTime)}`)
             for (const rate of garantex) {
                 const msg = `${rate.market}  ${rate.value}`
                 messages.push(msg);
