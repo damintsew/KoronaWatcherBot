@@ -1,3 +1,5 @@
+import {Curl} from "node-libcurl";
+
 export enum CountryCode {
     GEO,
     TUR,
@@ -6,7 +8,14 @@ export enum CountryCode {
     GRC
 }
 
-export const countries = [
+interface Country {
+    code: string,
+    flag: string,
+    text: string,
+    isActive: boolean
+}
+
+export const countries: Country[] = [
     {code: 'GEO', flag: '🇬🇪', text: "Грузия", isActive: true},
     {code: 'TUR', flag: '🇹🇷', text: "Турция", isActive: true},
     {code: 'ISR', flag: '🇮🇱', text: "Израиль", isActive: true},
@@ -29,4 +38,8 @@ export function mapCountryToFlag(countryCode: string): string {
 
 export function mapCountry(countryString: string): string {
      return countries.find(c => c.text === countryString)?.code
+}
+
+export function findCountryByCode(countryCode: string): Country {
+     return countries.find(c => c.code === countryCode)
 }

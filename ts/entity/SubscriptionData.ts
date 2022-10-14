@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, TableInheritance, Unique} from "typeorm";
+import {Column, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 import {LocalUser} from "./LocalUser";
 
 export abstract class SubscriptionData {

@@ -121,7 +121,7 @@ const unsubscribeWizard = new Scenes.WizardScene<MyContext>(
             }
 
             let subscriptionToRemove = allSubscriptions[selectedIndex];
-            await subscriptionService.remove(subscriptionToRemove);
+            // await subscriptionService.remove(subscriptionToRemove);
             await ctx.reply("Подписка удалена", Markup.removeKeyboard())
 
             return ctx.scene.leave();

@@ -1,12 +1,9 @@
 import {Bot, session} from 'grammy'
 import {NewContext, SessionData} from "./bot_config/Domain2";
 import {mainMenu} from "./wizard/NewSubscriptionWizard";
-import {UserService} from "./service/UserService";
-import {UserDao} from "./dao/UserDao";
-import {subscriptionService, userService} from "./DiContainer";
+import {exchangeRateService, userService} from "./DiContainer";
 import {ds} from "./data-source";
-import {TimeUnit} from "./entity/TimeUnit";
-import {mapCountryToFlag} from "./service/FlagUtilities";
+import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
 
 
 /**
@@ -22,6 +19,15 @@ import {mapCountryToFlag} from "./service/FlagUtilities";
 })()
 
 const bot = new Bot<NewContext>('5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs')
+
+bot.api.setMyCommands([
+    {command: 'rates', description: 'Показать текущий курс'},
+    {command: 'subscribe', description: 'Подписаться на уведомления'},
+    {command: 'list', description: 'Список подписок'},
+    {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
+    {command: 'help', description: 'Список моих возможностей'},
+    {command: 'support', description: 'Вопросы / предложения'}
+])
 
 bot.use(
     session({
@@ -47,44 +53,41 @@ bot.use(async (ctx, next) => {
     await next();
 });
 
-
 bot.use(mainMenu)
+bot.use(unsubscribeMenu)
 
-bot.command('subscribe', ctx => ctx.reply("Создание новой подписки", {reply_markup: mainMenu}))
-bot.command('help', async ctx => {
-    const text =
-        'Send /start to see and rate dishes. Send /fav to list your favorites!'
-    await ctx.reply(text)
+bot.command('rates', async (ctx) => {
+    await exchangeRateService.getAllRates(ctx)
 })
 
-bot.command('list', async (ctx) => {
-    function concatDates(timeUnits: TimeUnit[]) {
-        return timeUnits.map(time => time.timeHours).join(",")
-    }
+bot.command('subscribe',
+    ctx => ctx.reply("Выберите подписку для удаления:", {reply_markup: mainMenu}))
+bot.command('unsubscribe',
+    async ctx => {
+        const messages = await formatUnsubscribeText(ctx.user.userId)
+        messages.push("")
+        messages.push("Нажмите на подписку, которую надо удалить")
 
-    let subscriptionsByThreshold = await subscriptionService.getThresholdSubscriptionsByUser(ctx.user.userId)
-    const lines = []
-    lines.push("Активные подписки:")
+        return ctx.reply(messages.join("\n"), {reply_markup: unsubscribeMenu})
+    })
 
-    if (subscriptionsByThreshold.length > 0) {
-        lines.push( "Подписка по изменению цены:")
-        lines.push(...subscriptionsByThreshold
-            .map(s => ` - ${mapCountryToFlag(s.country)} шаг срабатывания: ${s.notificationThreshold}`))
+bot.command("list", async ctx => {
+    const messages = await formatUnsubscribeText(ctx.user.userId)
+    messages.unshift("Активные подписки:")
+    messages.unshift("")
 
-        lines.push("")
-    }
-    let scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.user.userId)
-    if (scheduledSubscriptions.length > 0) {
-        lines.push("Подписка по времени:")
-        for(let s of scheduledSubscriptions) {
-            lines.push(`\t - ${mapCountryToFlag(s.country)} время оповещения: ${concatDates(s.triggerTime)}`)
-        }
-        lines.push("")
-    }
+    messages.push("")
+    messages.push("Чтобы отписаться команда /unsubscribe")
 
-    lines.push("Чтобы отписаться команда /unsubscribe")
+    return ctx.reply(messages.join("\n"))
+})
 
-    await ctx.reply(lines.join("\n"))
+bot.command('help', async ctx => {
+    const text = 'Привет!\n Я показываю курсы валют в Золотой Короне.\n' +
+        '/subscribe чтобы подписаться на уведомления. \n/unsubscribe - отписаться. \n/list показывает активные подписки \n/help для помощи\n' +
+        'За помощью, вопросами и предложениями по работе бота пишите в группу @KoronaWatcherSupportBot'
+
+    await ctx.reply(text)
 })
 
 bot.catch(console.error.bind(console))

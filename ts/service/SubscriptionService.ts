@@ -41,13 +41,19 @@ export class SubscriptionService {
             .getMany();
     }
 
-    async remove(subscriptionToRemove: SubscriptionData) {
-        if (subscriptionToRemove instanceof SubscriptionScheduledData) {
-            await ds.manager.remove(subscriptionToRemove.triggerTime)
-            await ds.manager.remove(subscriptionToRemove)
-        } else if (subscriptionToRemove instanceof SubscriptionThresholdData) {
-            await ds.manager.remove(subscriptionToRemove);
-        }
+    async removeThresholdById(id: number): Promise<SubscriptionThresholdData> {
+        const subscription = await ds.manager.getRepository(SubscriptionThresholdData).findOneBy({id: id})
+        return ds.manager.remove(subscription);
+    }
+
+    async removeScheduledById(id: number): Promise<SubscriptionScheduledData> {
+        const subscription = await ds.manager.getRepository(SubscriptionScheduledData)
+            .createQueryBuilder("getScheduledSubscriptions")
+            .innerJoinAndSelect("getScheduledSubscriptions.triggerTime", "trigger")
+            .where({id: id})
+            .getOne()
+        await ds.manager.remove(subscription.triggerTime)
+        return ds.manager.remove(subscription)
     }
 
     private async saveSubscriptionScheduledData(subscriptionData: SubscriptionScheduledData) {
