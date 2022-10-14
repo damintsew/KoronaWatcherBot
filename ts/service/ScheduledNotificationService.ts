@@ -1,18 +1,17 @@
-import {Telegram} from "telegraf";
 import {KoronaDao} from "../KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
-import moment, {ISO_8601} from "moment-timezone";
-
+import moment from "moment-timezone";
+import {Api} from "@grammyjs/menu/out/deps.node";
 
 export class ScheduledNotificationService {
 
-    tg: Telegram;
+    tg: Api;
     subscriptionService: SubscriptionService
 
-    constructor(tg: Telegram, subscriptionService: SubscriptionService) {
+    constructor(tg: Api, subscriptionService: SubscriptionService) {
         this.tg = tg;
         this.subscriptionService = subscriptionService;
     }
@@ -53,7 +52,7 @@ export class ScheduledNotificationService {
             await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
             subscription.lastNotifiedValue = newValue;
             await ds.manager.getRepository(SubscriptionScheduledData)
-                .update(subscription.id, {lastNotifiedValue : newValue})
+                .update(subscription.id, {lastNotifiedValue: newValue})
         }
     }
 

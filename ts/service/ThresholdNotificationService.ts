@@ -7,13 +7,14 @@ import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {delay} from "../Util";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
+import { Api } from "@grammyjs/menu/out/deps.node";
 
 
 export class ThresholdNotificationService {
 
-    tg: Telegram;
+    tg: Api;
 
-    constructor(tg: Telegram) {
+    constructor(tg: Api) {
         this.tg = tg;
     }
 

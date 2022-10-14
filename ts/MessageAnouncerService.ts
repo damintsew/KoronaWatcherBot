@@ -5,12 +5,13 @@ import {Telegram} from "telegraf";
 import {ds} from "./data-source";
 import {delay} from "./Util";
 import {SendToUser} from "./entity/announcement/SendToUser";
+import {Api} from "@grammyjs/menu/out/deps.node";
 
 export class MessageAnouncerService {
 
-    tg: Telegram;
+    tg: Api;
 
-    constructor(tg: Telegram) {
+    constructor(tg: Api) {
         this.tg = tg;
     }
 

@@ -1,7 +1,7 @@
-import {Bot, session} from 'grammy'
+import {session} from 'grammy'
 import {NewContext, SessionData} from "./bot_config/Domain2";
 import {mainMenu} from "./wizard/NewSubscriptionWizard";
-import {exchangeRateService, userService} from "./DiContainer";
+import {bot, exchangeRateService, userService} from "./DiContainer";
 import {ds} from "./data-source";
 import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
 
@@ -18,7 +18,6 @@ import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWiz
     await ds.initialize(); //todo get rid of this
 })()
 
-const bot = new Bot<NewContext>('5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs')
 
 bot.api.setMyCommands([
     {command: 'rates', description: 'Показать текущий курс'},
