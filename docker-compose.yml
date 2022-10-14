@@ -11,6 +11,12 @@ services:
 
     ports:
       - "5432:5432"
+
+  korona-api:
+    container_name: korona
+    image: damintsew/korona-api
+    ports:
+      - "6666:6666"
 #  bot:
 #    container_name: korona-watcher-bot
 #    image: damintsew/korona-watcher-bot

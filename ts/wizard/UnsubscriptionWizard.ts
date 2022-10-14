@@ -5,6 +5,7 @@ import {findCountryByCode} from "../service/FlagUtilities";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {TimeUnit} from "../entity/TimeUnit";
+import {raw} from "express";
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {
@@ -23,9 +24,11 @@ unsubscribeMenu.dynamic(async (ctx) => {
     range.addRange(
         new MenuRange<NewContext>()
             .row()
-            .text({text: 'Отмена'}, ctx => {
-                ctx.editMessageText("Существующие подписки:")
-                ctx.menu.close()
+            .text({text: 'Отмена'}, async ctx => {
+                let messages = await formatUnsubscribeText(ctx.user.userId);
+                messages.unshift("Существующие подписки:")
+                await ctx.editMessageText(messages.join("\n"))
+                return ctx.menu.close()
             }))
 
     return range
