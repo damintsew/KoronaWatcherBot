@@ -1,5 +1,6 @@
 import express from 'express';
 import {ExchangeRatesDao} from "../dao/ExchangeRatesDao";
+import {KoronaDao} from "../KoronaDao";
 
 
 export default class ExpressServer {
@@ -13,10 +14,18 @@ export default class ExpressServer {
         this.appServer = express();
         this.appServer.use(express.json());
 
-
         this.appServer.get('/', async (req, res) => {
             let exchangeRates = await this.exchangeRateDao.getAllKoronaRates();
-            res.send({ rates: exchangeRates });
+            res.send({rates: exchangeRates});
+        })
+
+        this.appServer.get('/korona/:country', async (req, res) => {
+            const country = req.params.country
+            let value = await KoronaDao.call(country)
+            res.send({
+                country: country,
+                value: value
+            });
         })
     }
 
