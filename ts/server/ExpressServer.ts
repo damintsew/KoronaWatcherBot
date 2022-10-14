@@ -35,3 +35,7 @@ export default class ExpressServer {
         })
     }
 }
+
+
+const expr = new ExpressServer(new ExchangeRatesDao())
+expr.init()
