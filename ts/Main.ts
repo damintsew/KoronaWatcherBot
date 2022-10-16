@@ -34,7 +34,7 @@
 // // Create a dynamic menu that lists all dishes in the dishDatabase,
 // // one button each
 // const mainText = 'Pick a dish to rate it!'
-// const mainMenu = new Menu<MyContext>('country-selection-menu')
+// const mainMenu = new Menu<MyContext>('korona-subscription-menu')
 // mainMenu.dynamic(() => {
 //     const range = new MenuRange<MyContext>()
 //     for (const country of countries) {

@@ -27,7 +27,7 @@ const exchangeRateService = new ExchangeRatesService(exchangeRatesDao)
 const notificationService = new ThresholdNotificationService(bot.api)
 const scheduledNotificationService = new ScheduledNotificationService(bot.api, subscriptionService)
 const messageAnouncerService = new MessageAnouncerService(bot.api)
-const garantexService = new GarantexService(exchangeRatesDao, garantexDao)
+const garantexService = new GarantexService(exchangeRatesDao, garantexDao, subscriptionService, bot.api)
 const cronJobService = new CronJobService(notificationService, messageAnouncerService, scheduledNotificationService,
     garantexService)
 export {

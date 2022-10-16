@@ -41,7 +41,7 @@ export class ExchangeRatesDao {
             .getMany()
     }
 
-    async save(history: ExchangeHistory) {
-        await ds.manager.save(history)
+    save(history: ExchangeHistory) {
+        return ds.manager.save(history)
     }
 }

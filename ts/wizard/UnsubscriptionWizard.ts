@@ -5,7 +5,8 @@ import {findCountryByCode} from "../service/FlagUtilities";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {TimeUnit} from "../entity/TimeUnit";
-import {raw} from "express";
+import {BaseSubscription} from "../entity/subscription/BaseSubscription";
+import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {
@@ -19,6 +20,11 @@ unsubscribeMenu.dynamic(async (ctx) => {
     const scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.user.userId) //as SubscriptionThresholdData[]
     for (const subscription of scheduledSubscriptions) {
         range.addRange(createButton(subscription))
+    }
+
+    const baseSubscriptions = await subscriptionService.getBaseSubscriptions(ctx.user.userId) //as SubscriptionThresholdData[]
+    for (const subscription of baseSubscriptions) {
+        range.addRange(newButton(subscription))
     }
 
     range.addRange(
@@ -65,6 +71,36 @@ function createButton(subscription: SubscriptionThresholdData | SubscriptionSche
         .row()
 }
 
+function newButton(subscription: BaseSubscription) {
+    return new MenuRange<NewContext>()
+        .text(
+            {
+                text: () => formatButtonText(subscription),
+                payload: subscription.id.toString()
+            },
+            async ctx => {
+                await subscriptionService.removeBaseSubscription(Number.parseInt(ctx.match))
+
+                const msg = await formatUnsubscribeText(ctx.user.userId)
+                return ctx.editMessageText(msg.join("\n"), {
+                    parse_mode: 'HTML',
+                })
+            })
+        .row()
+}
+
+function formatTextMessage(s: BaseSubscription) {
+    if (s instanceof GarantexSubscription) {
+        return `Garantex: ${s.market} уведомлять при изменении на ${s.notificationThreshold}`
+    }
+}
+
+function formatButtonText(s: BaseSubscription) {
+    if (s instanceof GarantexSubscription) {
+        return `Garantex: ${s.market} изменение на ${s.notificationThreshold}`
+    }
+}
+
 async function formatUnsubscribeText(userId: number) {
     const messages = []
     const thresholdSubscriptions = await subscriptionService.getThresholdSubscriptionsByUser(userId) //as SubscriptionThresholdData[]
@@ -75,6 +111,11 @@ async function formatUnsubscribeText(userId: number) {
     const scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(userId) //as SubscriptionThresholdData[]
     for (const subscription of scheduledSubscriptions) {
         messages.push(formatText(subscription))
+    }
+
+    const baseSubscriptions = await subscriptionService.getBaseSubscriptions(userId) //as SubscriptionThresholdData[]
+    for (const subscription of baseSubscriptions) {
+        messages.push(formatTextMessage(subscription))
     }
 
     return messages;

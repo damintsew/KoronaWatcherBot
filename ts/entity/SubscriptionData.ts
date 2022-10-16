@@ -7,8 +7,11 @@ export abstract class SubscriptionData {
     id: number;
 
     @Column()
-    country: string
+    country: string;
 
     @ManyToOne(() => LocalUser)
     user: LocalUser
+
+    @Column({default: "KORONA"})
+    type: string
 }

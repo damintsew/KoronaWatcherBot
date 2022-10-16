@@ -13,8 +13,8 @@ interface Dish { //todo rename
     selected: boolean
 }
 
-const mainMenu = new Menu<NewContext>('country-selection-menu')
-mainMenu.dynamic(() => {
+const koronaSubscriptionMenu = new Menu<NewContext>('korona-subscription-menu')
+koronaSubscriptionMenu.dynamic(() => {
     const range = new MenuRange<NewContext>()
     for (const country of countries) {
         range
@@ -127,11 +127,13 @@ scheduledMenu.dynamic(ctx => {
 
                                     return unit
                                 })
-                        }
-                        subscriptionData.user = ctx.user
 
-                        console.log(subscriptionData)
-                        await subscriptionService.saveSubscription(subscriptionData)
+                            subscriptionData.user = ctx.user
+                            subscriptionData.type = "KORONA"
+
+                            console.log(subscriptionData)
+                            await subscriptionService.saveSubscription(subscriptionData)
+                        }
                         await ctx.reply("Подписка успешно сохранена")
                         return ctx.menu.close()
                     })))
@@ -151,17 +153,19 @@ function createDishMenu(text: string, payload: string) {
             async ctx => {
                 if (ctx.session.subscriptionData instanceof SubscriptionThresholdData) {
                     ctx.session.subscriptionData.notificationThreshold = Number.parseInt(ctx.match)
+
+                    ctx.session.subscriptionData.user = ctx.user
+                    ctx.session.subscriptionData.type = "KORONA"
+
+
+                    ctx.session.message += " " + text
+
+                    await ctx.editMessageText(ctx.session.message, {
+                        parse_mode: 'HTML',
+                    })
+                    console.log(ctx.session.subscriptionData)
+                    await subscriptionService.saveSubscription(ctx.session.subscriptionData)
                 }
-                ctx.session.subscriptionData.user = ctx.user
-
-                ctx.session.message += " " + text
-
-                await ctx.editMessageText(ctx.session.message, {
-                    parse_mode: 'HTML',
-                })
-                console.log(ctx.session.subscriptionData)
-                await subscriptionService.saveSubscription(ctx.session.subscriptionData)
-
                 await ctx.reply("Подписка успешно сохранена")
                 return ctx.menu.close()
             }
@@ -204,8 +208,8 @@ let createButtonsConfig = () => {
     };
 }
 
-mainMenu.register(dishMenu)
-mainMenu.register(threshHoldMenu)
-mainMenu.register(scheduledMenu)
+koronaSubscriptionMenu.register(dishMenu)
+koronaSubscriptionMenu.register(threshHoldMenu)
+koronaSubscriptionMenu.register(scheduledMenu)
 
-export {mainMenu}
+export {koronaSubscriptionMenu}

@@ -47,7 +47,7 @@ export class CronJobService {
 
         // Start job
         if (!this.everySecondJob.running) {
-            this.everySecondJob.start();
+            // this.everySecondJob.start();
         }
         if (!this.everyMinuteJob.running) {
             this.everyMinuteJob.start();
@@ -59,7 +59,7 @@ export class CronJobService {
 
     async secondAction(): Promise<void> {
         console.log("Call Garantex")
-        await this.garantexService.getAndSaveRates()
+        await this.garantexService.process()
 
         console.log("End Call Garantex")
     }

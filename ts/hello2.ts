@@ -1,11 +1,12 @@
 import {session} from 'grammy'
-import {NewContext, SessionData} from "./bot_config/Domain2";
-import {mainMenu} from "./wizard/NewSubscriptionWizard";
+import {NewContext, SessionData, MyConversation} from "./bot_config/Domain2";
+import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
 import {bot, exchangeRateService, userService} from "./DiContainer";
 import {ds} from "./data-source";
 import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
-import {type Conversation, conversations, createConversation,} from "@grammyjs/conversations";
+import {conversations, createConversation,} from "@grammyjs/conversations";
 import {Keyboard} from '@grammyjs/conversations/out/deps.node';
+import {garantexConversation, garantexSubscriptionMenu} from "./wizard/GarantexSubscriptionWizard";
 
 /**
  * All known dishes. Users can rate them to store which ones are their favorite
@@ -53,8 +54,6 @@ bot.use(async (ctx, next) => {
     await next();
 });
 
-type MyConversation = Conversation<NewContext>;
-
 async function movie(conversation: MyConversation, ctx: NewContext) {
     const keyboard = new Keyboard()
         .text("Подписка на курс: Золотая Корона").row()
@@ -67,10 +66,11 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
 
     const titleCtx = await conversation.waitFor("message:text");
     if (titleCtx.msg.text == "Подписка на курс: Золотая Корона") {
-        return ctx.reply("Создание новой подписки:", {reply_markup: mainMenu})
+        return ctx.reply("Создание новой подписки:", {reply_markup: koronaSubscriptionMenu})
     }
     if (titleCtx.msg.text == "Подписка на курс: Garantex") {
-        return ctx.reply("Todo:", {reply_markup: mainMenu})
+        // await ctx.conversation.exit()
+        return garantexConversation(conversation, ctx);
     }
     if (titleCtx.msg.text == "Скоро будет! Получение Спредов ЗК + Garantex") {
         return ctx.reply("В процессе разработки. Ожидайте оповещение!", {reply_markup: {remove_keyboard: true}})
@@ -78,19 +78,22 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
     return ctx.reply("", {reply_markup: {remove_keyboard: true}});
 }
 
-bot.use(mainMenu)
+bot.use(koronaSubscriptionMenu)
+bot.use(garantexSubscriptionMenu)
 bot.use(unsubscribeMenu)
+
 bot.use(conversations());
-bot.use(createConversation(movie));
+bot.use(createConversation(movie, "subscription-main"));
+bot.use(createConversation(garantexConversation, "garantex-subscription"));
 
 bot.command('rates', async (ctx) => {
     await exchangeRateService.getAllRates(ctx)
 })
 
 bot.command('subscribe', async ctx => {
-    await ctx.conversation.enter("movie");
+    await ctx.conversation.enter("subscription-main");
 })
-//ctx => ctx.reply("Выберите подписку для удаления:", {reply_markup: mainMenu}))
+
 bot.command('unsubscribe',
     async ctx => {
         const messages = await formatUnsubscribeText(ctx.user.userId)

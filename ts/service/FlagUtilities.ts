@@ -1,5 +1,3 @@
-import {Curl} from "node-libcurl";
-
 export enum CountryCode {
     GEO,
     TUR,

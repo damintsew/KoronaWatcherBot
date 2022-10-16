@@ -2,6 +2,7 @@ import {SubscriptionData} from "../entity/SubscriptionData";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
+import {BaseSubscription} from "../entity/subscription/BaseSubscription";
 
 export class SubscriptionService {
 
@@ -64,6 +65,7 @@ export class SubscriptionService {
             .where("user.userId = :userId AND country = :countryCode",
                 {userId: subscriptionData.user.userId, countryCode: subscriptionData.country})
             .getMany()
+
         for (let s of existingSubscriptions) {
             await ds.manager.remove(s.triggerTime)
             await ds.manager.remove(s)
@@ -82,12 +84,43 @@ export class SubscriptionService {
         return this.save(subscriptionData)
     }
 
-    private async save(subscriptionData: SubscriptionData){
+    private async save(subscriptionData: SubscriptionData) {
         try {
             await ds.manager.save(subscriptionData);
             return null //todo fix
         } catch (e) {
             console.log("This subscription already exists", e)
         }
+    }
+
+    //new ---------------------
+
+    async getBaseSubscriptions(userId: number) {
+        return ds.getRepository(BaseSubscription)
+            .createQueryBuilder("subcr")
+            .innerJoinAndSelect("subcr.user", "user")
+            .where("user.userId = :userId", {userId: userId})
+            .getMany()
+    }
+
+    async saveNewSubscription(subscriptionData: BaseSubscription): Promise<BaseSubscription> {
+        return ds.manager.save(subscriptionData)
+    }
+
+    async removeBaseSubscription(subscriptionId: number) {
+        return ds.manager.getRepository(BaseSubscription)
+            .delete(subscriptionId)
+    }
+
+    async getSubscriptionsByType<T extends BaseSubscription>(type: string): Promise<T[]> {
+        return ds.getRepository<T>(BaseSubscription)
+            .createQueryBuilder("subcr")
+            .innerJoinAndSelect("subcr.user", "user")
+            .where("type = :type", {type: type})
+            .getMany()
+    }
+
+    update(subs: BaseSubscription) {
+        return ds.getRepository(BaseSubscription).save(subs)
     }
 }
