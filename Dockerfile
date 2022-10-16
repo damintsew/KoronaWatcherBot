@@ -12,6 +12,6 @@ RUN mkdir ts
 COPY ts ts
 RUN npm run build
 
-EXPOSE 6666
+EXPOSE 3333
 CMD ["npm", "start"]
 

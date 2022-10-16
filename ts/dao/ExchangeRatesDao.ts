@@ -5,6 +5,10 @@ import {In} from "typeorm";
 
 export class ExchangeRatesDao {
 
+    constructor(){
+        ds.initialize();
+    }
+
     async getAllKoronaRates() {
 
         const maxIds = await ds.getRepository(ExchangeHistory)
