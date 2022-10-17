@@ -37,7 +37,11 @@ export class ExchangeRatesService {
             messages.push("Что-то сломалось. По Garantex нет данных по курсам валют. Пишите в /support")
         }
 
-        ctx.reply(messages.join("\n"))
+        try {
+           ctx.reply(messages.join("\n"))
+        } catch (e) {
+            console.error(e)
+        }
     }
 
 

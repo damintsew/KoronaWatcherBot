@@ -1,5 +1,4 @@
 import {CronJob} from 'cron';
-import {KoronaDao} from "../KoronaDao";
 import {ThresholdNotificationService} from "./ThresholdNotificationService";
 import {MessageAnouncerService} from "../MessageAnouncerService";
 import {ScheduledNotificationService} from "./ScheduledNotificationService";
@@ -47,7 +46,7 @@ export class CronJobService {
 
         // Start job
         if (!this.everySecondJob.running) {
-            // this.everySecondJob.start();
+            this.everySecondJob.start();
         }
         if (!this.everyMinuteJob.running) {
             this.everyMinuteJob.start();

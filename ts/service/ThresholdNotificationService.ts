@@ -1,13 +1,11 @@
 import {Equal} from "typeorm";
-import {SubscriptionData} from "../entity/SubscriptionData";
-import {Telegram} from "telegraf";
-import {KoronaDao} from "../KoronaDao";
+import {KoronaDao} from "../dao/KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {delay} from "../Util";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
-import { Api } from "@grammyjs/menu/out/deps.node";
+import {Api} from "@grammyjs/menu/out/deps.node";
 
 
 export class ThresholdNotificationService {
@@ -21,7 +19,7 @@ export class ThresholdNotificationService {
     async process() {
         for (const country of countries) {
             if (country.isActive) {
-                await this.processCountry(country.code)
+                this.processCountry(country.code)
             }
         }
     }
@@ -64,16 +62,13 @@ export class ThresholdNotificationService {
                 }
             } catch (e) {
                 console.error(e)
-                // if () {
-
-                // }
             }
         }
 
         await delay(1000)
     }
 
-    private async notifyUser(countryCode: string, userId: number, oldValue: number,  newValue: number) {
+    private async notifyUser(countryCode: string, userId: number, oldValue: number, newValue: number) {
         const sign = newValue > oldValue ? "⬆️" : "⬇️";
         const flag = mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`

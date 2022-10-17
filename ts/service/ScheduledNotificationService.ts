@@ -1,4 +1,4 @@
-import {KoronaDao} from "../KoronaDao";
+import {KoronaDao} from "../dao/KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";

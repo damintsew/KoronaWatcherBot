@@ -8,6 +8,7 @@
     <node-interpreter value="project" />
     <envs>
       <env name="TG_TOKEN" value="5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs" />
+      <env name="KORONA_API_URL" value="http://localhost:3333" />
     </envs>
     <method v="2" />
   </configuration>
