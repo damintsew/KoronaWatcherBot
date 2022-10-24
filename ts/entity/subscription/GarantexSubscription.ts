@@ -10,4 +10,8 @@ export class GarantexSubscription extends BaseSubscription {
 
     @Column({nullable: false})
     market: string
+
+    //todo maybe move to some middle entoty
+    @Column({nullable: true, type: "float"})
+    lastNotifiedValue: number
 }

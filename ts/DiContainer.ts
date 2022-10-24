@@ -12,6 +12,9 @@ import {GarantexDao} from "./dao/GarantexDao";
 import {Bot} from "grammy";
 import {NewContext} from "./bot_config/Domain2";
 import {env} from "node:process";
+import {StatisticService} from "./service/StatisticService";
+import {EventProcessor} from "./events/EventProcessor";
+import {KoronaGarantexSpreadService} from "./service/KoronaGarantexSpreadService";
 
 const token = env.TG_TOKEN
 if (token === undefined) {
@@ -25,13 +28,24 @@ const garantexDao = new GarantexDao();
 
 const userService = new UserService(userDao)
 
-const subscriptionService = new SubscriptionService();
-const exchangeRateService = new ExchangeRatesService(exchangeRatesDao)
+const eventProcessor = new EventProcessor();
 
-const notificationService = new ThresholdNotificationService(bot.api)
+const statisticService = new StatisticService();
+
+const spreadService = new KoronaGarantexSpreadService(bot.api);
+
+
+const subscriptionService = new SubscriptionService(eventProcessor, spreadService);
+const exchangeRateService = new ExchangeRatesService(exchangeRatesDao, statisticService)
+
+
+
+
+
+const notificationService = new ThresholdNotificationService(bot.api, eventProcessor)
 const scheduledNotificationService = new ScheduledNotificationService(bot.api, subscriptionService)
 const messageAnnouncerService = new MessageAnouncerService(bot.api)
-const garantexService = new GarantexService(exchangeRatesDao, garantexDao, subscriptionService, bot.api)
+const garantexService = new GarantexService(exchangeRatesDao, garantexDao, subscriptionService, eventProcessor, bot.api)
 const cronJobService = new CronJobService(notificationService, messageAnnouncerService, scheduledNotificationService,
     garantexService)
 
@@ -39,5 +53,7 @@ export {
     bot,
     userService,
     subscriptionService,
-    exchangeRateService
+    exchangeRateService,
+
+    eventProcessor
 }

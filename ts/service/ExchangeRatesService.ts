@@ -1,17 +1,21 @@
 import {ExchangeRatesDao} from "../dao/ExchangeRatesDao";
 import {mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment";
+import {StatisticService} from "./StatisticService";
 
 
 export class ExchangeRatesService {
 
     private exchangeDao: ExchangeRatesDao;
+    private statisticService: StatisticService;
 
-    constructor(exchangeDao: ExchangeRatesDao) {
+    constructor(exchangeDao: ExchangeRatesDao, statisticService: StatisticService) {
         this.exchangeDao = exchangeDao;
+        this.statisticService = statisticService;
     }
 
     async getAllRates(ctx) {
+        this.statisticService.callRate(ctx.user)
         const rates = await this.exchangeDao.getAllKoronaRates()
 
         const messages = []
@@ -43,7 +47,6 @@ export class ExchangeRatesService {
             console.error(e)
         }
     }
-
 
     private formatDate(date: Date): string {
         return moment(date).tz("Turkey").format("HH:mm:ss  DD.MM")

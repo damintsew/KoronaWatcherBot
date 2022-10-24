@@ -14,6 +14,4 @@ export class BaseSubscription {
     @Column({nullable: false})
     type: string
 
-    @Column({nullable: true, type: "float"})
-    lastNotifiedValue: number
 }

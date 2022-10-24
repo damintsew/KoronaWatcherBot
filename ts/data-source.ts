@@ -10,6 +10,9 @@ import {SendToUser} from "./entity/announcement/SendToUser";
 import {PaymentSubscription} from "./entity/PaymentSubscription";
 import {BaseSubscription} from "./entity/subscription/BaseSubscription";
 import {GarantexSubscription} from "./entity/subscription/GarantexSubscription";
+import {Statistic} from "./entity/Statistic";
+import {KoronaGarantexSpreadSubscription} from "./entity/subscription/KoronaGarantexSpreadSubscription";
+import {SpreadReferenceData} from "./entity/subscription/SpreadReferenceData";
 
 export const ds = new DataSource({
     type: "postgres",
@@ -21,7 +24,8 @@ export const ds = new DataSource({
     entities: [
         LocalUser, SubscriptionScheduledData, SubscriptionThresholdData, Announcements, TimeUnit, ExchangeHistory,
         SendToUser, PaymentSubscription,
-        BaseSubscription, GarantexSubscription
+        BaseSubscription, GarantexSubscription, KoronaGarantexSpreadSubscription,SpreadReferenceData,
+        Statistic
     ],
     synchronize: true,
     logging: true

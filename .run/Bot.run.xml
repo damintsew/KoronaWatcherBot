@@ -5,7 +5,7 @@
     <scripts>
       <script value="start" />
     </scripts>
-    <node-interpreter value="project" />
+    <node-interpreter value="/opt/homebrew/bin/node" />
     <envs>
       <env name="TG_TOKEN" value="5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs" />
       <env name="KORONA_API_URL" value="http://localhost:3333" />

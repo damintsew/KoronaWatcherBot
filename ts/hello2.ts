@@ -7,19 +7,12 @@ import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWiz
 import {conversations, createConversation,} from "@grammyjs/conversations";
 import {GrammyError, HttpError, Keyboard} from '@grammyjs/conversations/out/deps.node';
 import {garantexConversation, garantexSubscriptionMenu} from "./wizard/GarantexSubscriptionWizard";
+import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscriptionWizard";
 
-/**
- * All known dishes. Users can rate them to store which ones are their favorite
- * dishes.
- *
- * They can also decide to delete them. If a user decides to delete a dish, it
- * will be gone for everyone.
- */
 
 (async function () {
     await ds.initialize(); //todo get rid of this
 })()
-
 
 bot.api.setMyCommands([
     {command: 'rates', description: 'Показать текущий курс'},
@@ -58,7 +51,7 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
     const keyboard = new Keyboard()
         .text("Подписка на курс: Золотая Корона").row()
         .text("Подписка на курс: Garantex").row()
-        .text("Скоро будет! Получение Спредов ЗК + Garantex").row()
+        .text("Получение Спредов ЗК + Garantex").row()
         .text("Отмена")
         .oneTime()
         .resized();
@@ -69,22 +62,23 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
         return ctx.reply("Создание новой подписки:", {reply_markup: koronaSubscriptionMenu})
     }
     if (titleCtx.msg.text == "Подписка на курс: Garantex") {
-        // await ctx.conversation.exit()
         return garantexConversation(conversation, ctx);
     }
-    if (titleCtx.msg.text == "Скоро будет! Получение Спредов ЗК + Garantex") {
-        return ctx.reply("В процессе разработки. Ожидайте оповещение!", {reply_markup: {remove_keyboard: true}})
+    if (titleCtx.msg.text == "Получение Спредов ЗК + Garantex") {
+        return spreadConversation(conversation, ctx)
     }
     return ctx.reply("", {reply_markup: {remove_keyboard: true}});
 }
 
 bot.use(koronaSubscriptionMenu)
 bot.use(garantexSubscriptionMenu)
+bot.use(spreadSubscriptionMenu)
 bot.use(unsubscribeMenu)
 
 bot.use(conversations());
 bot.use(createConversation(movie, "subscription-main"));
 bot.use(createConversation(garantexConversation, "garantex-subscription"));
+bot.use(createConversation(spreadConversation, "spread-subscription"));
 
 bot.command('rates', async (ctx) => {
     await exchangeRateService.getAllRates(ctx)
@@ -114,12 +108,22 @@ bot.command("list", async ctx => {
     return ctx.reply(messages.join("\n"))
 })
 
-bot.command('help', async ctx => {
-    const text = 'Привет!\n Я показываю курсы валют в Золотой Короне.\n' +
-        '/subscribe чтобы подписаться на уведомления. \n/unsubscribe - отписаться. \n/list показывает активные подписки \n/help для помощи\n' +
+bot.command(['help', 'start'], async ctx => {
+    const text = 'Привет!\n' +
+        'Я показываю курсы валют в Золотой Короне.\n' +
+        '/rates курсы валют по всем странам.\n' +
+        '/subscribe чтобы подписаться на уведомления. \n' +
+        '/unsubscribe - отписаться. \n' +
+        '/list показывает активные подписки \n' +
+        '/help для помощи\n' +
+        '/support ссылка на группу помощи по боту.\n' +
         'За помощью, вопросами и предложениями по работе бота пишите в группу @KoronaWatcherSupportBot'
 
     await ctx.reply(text)
+})
+
+bot.command('debug', async ctx => {
+    await ctx.reply(`userId = ${ctx.user.userId}`)
 })
 
 bot.catch((err) => {

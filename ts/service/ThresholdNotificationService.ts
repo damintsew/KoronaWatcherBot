@@ -6,14 +6,17 @@ import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {delay} from "../Util";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
 import {Api} from "@grammyjs/menu/out/deps.node";
+import {EventProcessor} from "../events/EventProcessor";
 
 
 export class ThresholdNotificationService {
 
     tg: Api;
+    eventProcessor: EventProcessor
 
-    constructor(tg: Api) {
+    constructor(tg: Api, eventProcessor: EventProcessor) {
         this.tg = tg;
+        this.eventProcessor = eventProcessor
     }
 
     async process() {
@@ -39,6 +42,7 @@ export class ThresholdNotificationService {
             exchange.value = newValue
 
             await ds.manager.save(exchange)
+            this.eventProcessor.onEvent(exchange)
         }
 
 
@@ -65,7 +69,7 @@ export class ThresholdNotificationService {
             }
         }
 
-        await delay(1000)
+        await delay(500)
     }
 
     private async notifyUser(countryCode: string, userId: number, oldValue: number, newValue: number) {

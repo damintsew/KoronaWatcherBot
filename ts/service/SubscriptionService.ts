@@ -3,8 +3,26 @@ import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {BaseSubscription} from "../entity/subscription/BaseSubscription";
+import {KoronaGarantexSpreadService} from "./KoronaGarantexSpreadService";
+import {ExchangeHistory} from "../entity/ExchangeHistory";
+import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
+import {EventProcessor} from "../events/EventProcessor";
 
 export class SubscriptionService {
+
+    private eventProcessor: EventProcessor
+    private spreadService: KoronaGarantexSpreadService
+
+    constructor(eventProcessor: EventProcessor, spreadService: KoronaGarantexSpreadService) {
+        this.eventProcessor = eventProcessor;
+        this.spreadService = spreadService;
+        const that = this
+        eventProcessor.subscribe({
+            onEvent(exchangeValue: ExchangeHistory) {
+                that.processSubs(exchangeValue)
+            }
+        })
+    }
 
     async saveSubscription(subscriptionData: SubscriptionData):
         Promise<SubscriptionScheduledData | SubscriptionThresholdData> {
@@ -114,13 +132,37 @@ export class SubscriptionService {
 
     async getSubscriptionsByType<T extends BaseSubscription>(type: string): Promise<T[]> {
         return ds.getRepository<T>(BaseSubscription)
-            .createQueryBuilder("subcr")
-            .innerJoinAndSelect("subcr.user", "user")
+            .createQueryBuilder("s")
+            .innerJoinAndSelect("s.user", "user")
             .where("type = :type", {type: type})
             .getMany()
     }
 
+    // async getAllNewSubscriptions(): Promise<BaseSubscription[]> {
+    //     return ds.getRepository(BaseSubscription)
+    //         .createQueryBuilder("subcr")
+    //         .innerJoinAndSelect("subcr.user", "user")
+    //         .where("type = :type", {type: type})
+    // .getMany()
+    // }
+
     update(subs: BaseSubscription) {
         return ds.getRepository(BaseSubscription).save(subs)
+    }
+
+    //todo move to DAO
+
+
+    async processSubs(exchangeRate: ExchangeHistory) {
+        let baseSubscriptions = await this.getSubscriptionsByType<KoronaGarantexSpreadSubscription>("SPREAD");
+        for (const subscription of baseSubscriptions) {
+
+            // todo move to service
+            if (exchangeRate.type == "KORONA") {
+                this.spreadService.processReference([exchangeRate], subscription)
+            } else if (exchangeRate.type == "GARANTEX") {
+                this.spreadService.processBase(exchangeRate, subscription)
+            }
+        }
     }
 }

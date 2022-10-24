@@ -13,6 +13,9 @@ import {ds} from "../data-source";
 import {unsubscribeMenu} from "./UnsubscriptionWizard";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
 import {QueryFailedError} from "typeorm";
+import {KoronaGarantexSpreadService} from "../service/KoronaGarantexSpreadService";
+import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
+import {SpreadReferenceData} from "../entity/subscription/SpreadReferenceData";
 
 /** This is how the dishes look that this bot is managing */
 interface Dish { //todo rename
@@ -21,7 +24,7 @@ interface Dish { //todo rename
     selected: boolean
 }
 
-async function garantexConversation(conversation: MyConversation, ctx: NewContext) {
+async function spreadConversation(conversation: MyConversation, ctx: NewContext) {
 
     if (ctx.user.subscriptions == null || ctx.user.subscriptions.length == 0) {
         const keyboard = new Keyboard()
@@ -38,7 +41,7 @@ async function garantexConversation(conversation: MyConversation, ctx: NewContex
 
         if (answer.msg.text == "Да") {
             const trialSubscription = new PaymentSubscription(); // todo move to Subscr service
-            trialSubscription.type ="GARANTEX"
+            trialSubscription.type ="GARANTEX-SPREAD"
             trialSubscription.trial = true
             trialSubscription.startDate = new Date()
             trialSubscription.expirationDate = moment().add(7, "d").toDate()
@@ -46,7 +49,7 @@ async function garantexConversation(conversation: MyConversation, ctx: NewContex
 
             await ds.manager.save(trialSubscription)
             await ctx.reply("Триал оформлен. В случае проблем пишите в /support")
-            await ctx.reply("Оформление подписки Garantex", {reply_markup: garantexSubscriptionMenu})
+            await ctx.reply("Оформление подписки Garantex", {reply_markup: spreadSubscriptionMenu})
             // todo move to subcription
         } else if (answer.msg.text == "Нет") {
             return ctx.reply("Отменяю") //todo remove keyboard
@@ -54,16 +57,16 @@ async function garantexConversation(conversation: MyConversation, ctx: NewContex
     }
 
     const activeTrial = findPredicate(ctx.user.subscriptions,
-        s => s.trial && s.type == "GARANTEX")
+        s => s.trial && s.type == "GARANTEX-SPREAD")
     if (activeTrial) {
-        await ctx.reply("Оформление подписки Garantex", {reply_markup: garantexSubscriptionMenu})
+        await ctx.reply("Оформление подписки Garantex", {reply_markup: spreadSubscriptionMenu})
         return;
     }
 
     const activeGarantexSubscription = findPredicate(ctx.user.subscriptions,
-        s => s.type == "GARANTEX")
+        s => s.type == "GARANTEX-SPREAD")
     if (activeGarantexSubscription) {
-        await ctx.reply("Оформление подписки Garantex", {reply_markup: garantexSubscriptionMenu})
+        await ctx.reply("Оформление подписки Garantex", {reply_markup: spreadSubscriptionMenu})
         return;
     }
 
@@ -71,18 +74,18 @@ async function garantexConversation(conversation: MyConversation, ctx: NewContex
     return ctx.reply("Ваша подписка кончилась! Оплатите подписку", {reply_markup: {remove_keyboard: true}});
 }
 
-const garantexSubscriptionMenu = new Menu<NewContext>('garantex-subscription-menu')
-garantexSubscriptionMenu.dynamic(() => {
+const spreadSubscriptionMenu = new Menu<NewContext>('spread-subscription-menu')
+spreadSubscriptionMenu.dynamic(() => {
 
     // todo duplicate
     const range = new MenuRange<NewContext>()
-    range.addRange(createDishMenu("1 рубль", "1"))
-    range.addRange(createDishMenu("75 копеек", "0.75").row())
-    range.addRange(createDishMenu("50 копеек", "0.50"))
-    range.addRange(createDishMenu("25 копеек", "0.25").row())
-    range.addRange(createDishMenu("10 копеек", "0.1"))
-    range.addRange(createDishMenu("5 копеек", "0.05").row())
-    range.addRange(createDishMenu("1 копейка", "0.01")) // todo ugly function calls
+    range.addRange(createDishMenu("1 рубль", "100"))
+    range.addRange(createDishMenu("75 копеек", "75").row())
+    range.addRange(createDishMenu("50 копеек", "50"))
+    range.addRange(createDishMenu("25 копеек", "25").row())
+    range.addRange(createDishMenu("10 копеек", "10"))
+    range.addRange(createDishMenu("5 копеек", "5").row())
+    range.addRange(createDishMenu("1 копейка", "1")) // todo ugly function calls
     range.addRange(
         new MenuRange<NewContext>()
             .row()
@@ -97,11 +100,15 @@ function createDishMenu(text: string, payload: string) {
         .text(
             {text: text, payload: payload},
             async ctx => {
-                ctx.session.subscriptionData = new GarantexSubscription()
+                const sp = new SpreadReferenceData()
+                sp.country = "TUR"
+
+                ctx.session.subscriptionData = new KoronaGarantexSpreadSubscription()
                 ctx.session.subscriptionData.user = ctx.user
                 ctx.session.subscriptionData.notificationThreshold = Number.parseInt(ctx.match)
-                ctx.session.subscriptionData.type = "GARANTEX"
-                ctx.session.subscriptionData.market = "usdtrub"
+                ctx.session.subscriptionData.type = "SPREAD"
+                ctx.session.subscriptionData.referenceData = [sp]
+                // ctx.session.subscriptionData.market = "usdtrub"
 
                 let message;
                 let success = false;
@@ -150,5 +157,5 @@ function findActiveSubscriptions(subscriptions: PaymentSubscription[]) {
     return result;
 }
 
-export {garantexSubscriptionMenu, garantexConversation}
+export {spreadSubscriptionMenu, spreadConversation}
 

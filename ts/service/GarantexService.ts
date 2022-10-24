@@ -7,6 +7,8 @@ import {ds} from "../data-source";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {mapCountryToFlag} from "./FlagUtilities";
 import {Api} from "@grammyjs/menu/out/deps.node";
+import {EventProcessor} from "../events/EventProcessor";
+import e from "express";
 
 
 export class GarantexService {
@@ -15,11 +17,14 @@ export class GarantexService {
     private garantexDao: GarantexDao;
     private subscriptionService: SubscriptionService
     private tgApi: Api;
+    private eventProcessor: EventProcessor
 
-    constructor(exchangeRatesDao: ExchangeRatesDao, garantexDao: GarantexDao, subscriptionService: SubscriptionService, tgApi: Api) {
+    constructor(exchangeRatesDao: ExchangeRatesDao, garantexDao: GarantexDao, subscriptionService: SubscriptionService,
+                eventProcessor: EventProcessor, tgApi: Api) {
         this.exchangeRatesDao = exchangeRatesDao;
         this.garantexDao = garantexDao;
         this.subscriptionService = subscriptionService;
+        this.eventProcessor = eventProcessor;
         this.tgApi = tgApi;
     }
 
@@ -39,6 +44,8 @@ export class GarantexService {
             hist.value = trade.price
             hist.dateTime = trade.created_at
             hist.currency = trade.market
+
+            this.eventProcessor.onEvent(hist)
 
             return this.exchangeRatesDao.save(hist)
         }
