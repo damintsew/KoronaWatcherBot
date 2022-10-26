@@ -15,12 +15,15 @@ import {env} from "node:process";
 import {StatisticService} from "./service/StatisticService";
 import {EventProcessor} from "./events/EventProcessor";
 import {KoronaGarantexSpreadService} from "./service/KoronaGarantexSpreadService";
+import {Container} from "typedi";
 
 const token = env.TG_TOKEN
 if (token === undefined) {
     throw new Error('TG_TOKEN must be provided!')
 }
 const bot = new Bot<NewContext>(token)
+
+Container.set(Bot, bot);
 
 const userDao = new UserDao()
 const exchangeRatesDao = new ExchangeRatesDao();
@@ -37,9 +40,6 @@ const spreadService = new KoronaGarantexSpreadService(bot.api);
 
 const subscriptionService = new SubscriptionService(eventProcessor, spreadService);
 const exchangeRateService = new ExchangeRatesService(exchangeRatesDao, statisticService)
-
-
-
 
 
 const notificationService = new ThresholdNotificationService(bot.api, eventProcessor)

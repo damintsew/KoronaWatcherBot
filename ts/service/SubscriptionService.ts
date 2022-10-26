@@ -134,7 +134,8 @@ export class SubscriptionService {
         return ds.getRepository<T>(BaseSubscription)
             .createQueryBuilder("s")
             .innerJoinAndSelect("s.user", "user")
-            .where("type = :type", {type: type})
+            .innerJoinAndSelect("user.subscriptions", "subscriptions")
+            .where("s.type = :type", {type: type})
             .getMany()
     }
 

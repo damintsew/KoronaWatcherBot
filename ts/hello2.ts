@@ -1,18 +1,25 @@
-import {session} from 'grammy'
+import 'reflect-metadata';
+import {Bot, session} from 'grammy'
 import {NewContext, SessionData, MyConversation} from "./bot_config/Domain2";
 import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
-import {bot, exchangeRateService, userService} from "./DiContainer";
+import {exchangeRateService, userService} from "./DiContainer";
 import {ds} from "./data-source";
 import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
 import {conversations, createConversation,} from "@grammyjs/conversations";
 import {GrammyError, HttpError, Keyboard} from '@grammyjs/conversations/out/deps.node';
-import {garantexConversation, garantexSubscriptionMenu} from "./wizard/GarantexSubscriptionWizard";
+import {
+    garantexCreateSubscription,
+    garantexOnlySubscription,
+    garantexSubscriptionMenu
+} from "./wizard/GarantexSubscriptionWizard";
 import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscriptionWizard";
-
+import {Container} from "typedi";
 
 (async function () {
     await ds.initialize(); //todo get rid of this
 })()
+
+const bot = Container.get(Bot) as Bot<NewContext>;
 
 bot.api.setMyCommands([
     {command: 'rates', description: 'Показать текущий курс'},
@@ -62,7 +69,7 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
         return ctx.reply("Создание новой подписки:", {reply_markup: koronaSubscriptionMenu})
     }
     if (titleCtx.msg.text == "Подписка на курс: Garantex") {
-        return garantexConversation(conversation, ctx);
+        return garantexCreateSubscription(conversation, ctx);
     }
     if (titleCtx.msg.text == "Получение Спредов ЗК + Garantex") {
         return spreadConversation(conversation, ctx)
@@ -77,7 +84,7 @@ bot.use(unsubscribeMenu)
 
 bot.use(conversations());
 bot.use(createConversation(movie, "subscription-main"));
-bot.use(createConversation(garantexConversation, "garantex-subscription"));
+bot.use(createConversation(garantexOnlySubscription, "garantex-only-trial-subscription"));
 bot.use(createConversation(spreadConversation, "spread-subscription"));
 
 bot.command('rates', async (ctx) => {
@@ -86,6 +93,10 @@ bot.command('rates', async (ctx) => {
 
 bot.command('subscribe', async ctx => {
     await ctx.conversation.enter("subscription-main");
+})
+
+bot.command('payments', async ctx => {
+    await ctx.conversation.enter("garantex-only-trial-subscription");
 })
 
 bot.command('unsubscribe',

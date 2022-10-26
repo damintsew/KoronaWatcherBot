@@ -2,16 +2,21 @@ import {ExchangeRatesDao} from "../dao/ExchangeRatesDao";
 import {mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment";
 import {StatisticService} from "./StatisticService";
+import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
+import {Container} from "typedi";
+import {LocalUser} from "../entity/LocalUser";
 
 
 export class ExchangeRatesService {
 
     private exchangeDao: ExchangeRatesDao;
     private statisticService: StatisticService;
+    private paymentSubscriptionService: PaymentSubscriptionService;
 
     constructor(exchangeDao: ExchangeRatesDao, statisticService: StatisticService) {
         this.exchangeDao = exchangeDao;
         this.statisticService = statisticService;
+        this.paymentSubscriptionService = Container.get(PaymentSubscriptionService)
     }
 
     async getAllRates(ctx) {
@@ -29,10 +34,24 @@ export class ExchangeRatesService {
             messages.push("Что-то сломалось. По Короне нет данных по курсам валют. Пишите в /support")
         }
 
+        messages.push(...await this.garantexRates(ctx.user));
+
+        ctx.reply(messages.join("\n"))
+    }
+
+    private async garantexRates(user: LocalUser) {
+        const messages = [""]
+        const activeSubscription = this.paymentSubscriptionService.filterByActiveSubscription(user.subscriptions, "GARANTEX")
+        if (activeSubscription == null) {
+            messages.push(`Garantex.`)
+            messages.push(`Ваша подписка на Garantex отсутсвует. Для оформления команда /payments`)
+            return messages;
+        }
+
         const garantex = await this.exchangeDao.getAllGarantexRates()
 
         if (garantex.length > 0) {
-            messages.push(`\nGarantex на: ${this.formatDate(garantex[0].dateTime)}`)
+            messages.push(`Garantex на: ${this.formatDate(garantex[0].dateTime)}`)
             for (const rate of garantex) {
                 const msg = `${rate.market}  ${rate.value}`
                 messages.push(msg);
@@ -41,11 +60,7 @@ export class ExchangeRatesService {
             messages.push("Что-то сломалось. По Garantex нет данных по курсам валют. Пишите в /support")
         }
 
-        try {
-           ctx.reply(messages.join("\n"))
-        } catch (e) {
-            console.error(e)
-        }
+        return messages;
     }
 
     private formatDate(date: Date): string {

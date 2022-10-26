@@ -1,6 +1,8 @@
 import {ds} from "../data-source";
 import {LocalUser} from "../entity/LocalUser";
+import {Service} from "typedi";
 
+@Service()
 export class UserDao {
 
     getUserWithSubscriptions(userId: number): Promise<LocalUser> {
@@ -13,5 +15,13 @@ export class UserDao {
 
     saveUser(user: LocalUser): Promise<LocalUser> {
         return ds.manager.save(user)
+    }
+
+    getAdmins() {
+        return ds.getRepository(LocalUser)
+            .createQueryBuilder("getUserById")
+            .leftJoinAndSelect("getUserById.subscriptions", "sent")
+            .where({'isAdmin': true})
+            .getMany()
     }
 }

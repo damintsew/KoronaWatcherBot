@@ -13,6 +13,7 @@ import {GarantexSubscription} from "./entity/subscription/GarantexSubscription";
 import {Statistic} from "./entity/Statistic";
 import {KoronaGarantexSpreadSubscription} from "./entity/subscription/KoronaGarantexSpreadSubscription";
 import {SpreadReferenceData} from "./entity/subscription/SpreadReferenceData";
+import {PendingTxId} from "./entity/PendingTxId";
 
 export const ds = new DataSource({
     type: "postgres",
@@ -25,7 +26,8 @@ export const ds = new DataSource({
         LocalUser, SubscriptionScheduledData, SubscriptionThresholdData, Announcements, TimeUnit, ExchangeHistory,
         SendToUser, PaymentSubscription,
         BaseSubscription, GarantexSubscription, KoronaGarantexSpreadSubscription,SpreadReferenceData,
-        Statistic
+        Statistic,
+        PendingTxId
     ],
     synchronize: true,
     logging: true

@@ -3,12 +3,10 @@ import {GarantexDao} from "../dao/GarantexDao";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {SubscriptionService} from "./SubscriptionService";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
-import {ds} from "../data-source";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
-import {mapCountryToFlag} from "./FlagUtilities";
 import {Api} from "@grammyjs/menu/out/deps.node";
 import {EventProcessor} from "../events/EventProcessor";
-import e from "express";
+import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
+import {Container} from "typedi";
 
 
 export class GarantexService {
@@ -18,20 +16,31 @@ export class GarantexService {
     private subscriptionService: SubscriptionService
     private tgApi: Api;
     private eventProcessor: EventProcessor
+    private paymentValidatorService: PaymentSubscriptionService
 
-    constructor(exchangeRatesDao: ExchangeRatesDao, garantexDao: GarantexDao, subscriptionService: SubscriptionService,
-                eventProcessor: EventProcessor, tgApi: Api) {
+    constructor(exchangeRatesDao: ExchangeRatesDao,
+                garantexDao: GarantexDao,
+                subscriptionService: SubscriptionService,
+                eventProcessor: EventProcessor,
+                tgApi: Api) {
         this.exchangeRatesDao = exchangeRatesDao;
         this.garantexDao = garantexDao;
         this.subscriptionService = subscriptionService;
         this.eventProcessor = eventProcessor;
         this.tgApi = tgApi;
+        this.paymentValidatorService = Container.get(PaymentSubscriptionService)
     }
 
     async process() {
         const exchangeRate = await this.getAndSaveRates()
         let subscriptions = await this.subscriptionService.getSubscriptionsByType<GarantexSubscription>("GARANTEX");
-        await this.processNotifications(subscriptions, exchangeRate);
+
+        let activeSubscriptions = subscriptions.filter( subscription => {
+            const activeSubscription = this.paymentValidatorService.filterByActiveSubscription(subscription.user?.subscriptions, "GARANTEX")
+            return activeSubscription != null
+        })
+
+        await this.processNotifications(activeSubscriptions, exchangeRate);
     }
 
     private async getAndSaveRates(): Promise<ExchangeHistory> {
@@ -78,7 +87,7 @@ export class GarantexService {
         }
     }
 
-    private async notifyUser(userId: number, market: string, oldValue: number,  newValue: number) {
+    private async notifyUser(userId: number, market: string, oldValue: number, newValue: number) {
         const sign = newValue > oldValue ? "⬆️" : "⬇️";
         const text = `Garantex: ${sign} ${market} 1$ = ${newValue}`
         console.log("Sending message to user " + userId)
