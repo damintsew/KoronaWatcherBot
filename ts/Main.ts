@@ -1,114 +1,153 @@
-// import { Bot, Context, session, SessionFlavor } from 'grammy'
-// import { Menu, MenuRange } from '@grammyjs/menu'
-// import {countries} from "./service/FlagUtilities";
-//
-// /** This is how the dishes look that this bot is managing */
-// interface Dish {
-//     id: string
-//     name: string
-// }
-//
-// interface SessionData {
-//     favoriteIds: string[]
-// }
-// type MyContext = Context & SessionFlavor<SessionData>
-//
-// /**
-//  * All known dishes. Users can rate them to store which ones are their favorite
-//  * dishes.
-//  *
-//  * They can also decide to delete them. If a user decides to delete a dish, it
-//  * will be gone for everyone.
-//  */
-//
-// const bot = new Bot<MyContext>('5220606033:AAFvlqk47pUZgnQKn4_NVhigzz3Sx3WfZzs')
-//
-// bot.use(
-//     session({
-//         initial(): SessionData {
-//             return { favoriteIds: [] }
-//         },
-//     })
-// )
-//
-// // Create a dynamic menu that lists all dishes in the dishDatabase,
-// // one button each
-// const mainText = 'Pick a dish to rate it!'
-// const mainMenu = new Menu<MyContext>('korona-subscription-menu')
-// mainMenu.dynamic(() => {
-//     const range = new MenuRange<MyContext>()
-//     for (const country of countries) {
-//         range
-//             .submenu(
-//                 { text: `${country.flag} ${country.text}`, payload: country.code }, // label and payload
-//                 'dish', // navigation target menu
-//                 ctx =>
-//                     ctx.editMessageText(dishText(`${country.flag} ${country.text}`), {
-//                         parse_mode: 'HTML',
-//                     }) // handler
-//             )
-//             .row()
-//     }
-//     return range
-// })
-//
-// // Create the sub-menu that is used for rendering dishes
-// const dishText = (dish: string) => `<b>${dish}</b>\n\nYour rating:`
-// const dishMenu = new Menu<MyContext>('dish')
-// dishMenu.dynamic(ctx => {
-//     const dish = ctx.match
-//     if (typeof dish !== 'string') throw new Error('No dish chosen!')
-//     return createDishMenu(dish)
-// })
-// /** Creates a menu that can render any given dish */
-// function createDishMenu(dish: string) {
-//     return new MenuRange<MyContext>()
-//         .text(
-//             {
-//                 text: ctx =>
-//                     ctx.session.favoriteIds.includes(dish) ? 'Yummy!' : 'Meh.',
-//                 payload: dish,
-//             },
-//             ctx => {
-//                 const set = new Set(ctx.session.favoriteIds)
-//                 if (!set.delete(dish)) set.add(dish)
-//                 ctx.session.favoriteIds = Array.from(set.values())
-//                 ctx.menu.update()
-//             }
-//         )
-//         .row()
-//         .back({ text: 'X Delete', payload: dish }, async ctx => {
-//             const index = dishDatabase.findIndex(d => d.id === dish)
-//             dishDatabase.splice(index, 1)
-//             await ctx.editMessageText('Pick a dish to rate it!')
-//         })
-//         .row()
-//         .back({ text: 'Back', payload: dish })
-// }
-//
-// mainMenu.register(dishMenu)
-//
-// bot.use(mainMenu)
-//
-// bot.command('start', ctx => ctx.reply(mainText, { reply_markup: mainMenu }))
-// bot.command('help', async ctx => {
-//     const text =
-//         'Send /start to see and rate dishes. Send /fav to list your favorites!'
-//     await ctx.reply(text)
-// })
-// bot.command('fav', async ctx => {
-//     const favs = ctx.session.favoriteIds
-//     if (favs.length === 0) {
-//         await ctx.reply('You do not have any favorites yet!')
-//         return
-//     }
-//     const names = favs
-//         .map(id => dishDatabase.find(dish => dish.id === id))
-//         .filter((dish): dish is Dish => dish !== undefined)
-//         .map(dish => dish.name)
-//         .join('\n')
-//     await ctx.reply(`Those are your favorite dishes:\n\n${names}`)
-// })
-//
-// bot.catch(console.error.bind(console))
-// bot.start()
+import 'reflect-metadata';
+import {Bot, session} from 'grammy'
+import {NewContext, SessionData, MyConversation} from "./bot_config/Domain2";
+import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
+import {exchangeRateService, userService} from "./DiContainer";
+import {ds} from "./data-source";
+import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
+import {conversations, createConversation,} from "@grammyjs/conversations";
+import {GrammyError, HttpError, Keyboard} from '@grammyjs/conversations/out/deps.node';
+import {
+    garantexCreateSubscription,
+    garantexOnlySubscription,
+    garantexSubscriptionMenu
+} from "./wizard/GarantexSubscriptionWizard";
+import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscriptionWizard";
+import {Container} from "typedi";
+
+(async function () {
+    await ds.initialize(); //todo get rid of this
+})()
+
+const bot = Container.get(Bot) as Bot<NewContext>;
+
+bot.api.setMyCommands([
+    {command: 'rates', description: 'Показать текущий курс'},
+    {command: 'subscribe', description: 'Подписаться на уведомления'},
+    {command: 'list', description: 'Список подписок'},
+    {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
+    {command: 'help', description: 'Список моих возможностей'},
+    {command: 'support', description: 'Вопросы / предложения'}
+])
+
+bot.use(
+    session({
+        initial(): SessionData {
+            return {
+                message: null,
+                subscriptionData: null,
+                country: null,
+                selectedSubscriptionButtons: []
+            }
+        },
+    })
+)
+
+bot.use(async (ctx, next) => {
+    if (!ctx.user) {
+        let user = await userService.getUser(ctx.from.id)
+        if (user == null) {
+            user = await userService.createUser(ctx.from)
+        }
+        ctx.user = user
+    }
+    await next();
+});
+
+async function movie(conversation: MyConversation, ctx: NewContext) {
+    const keyboard = new Keyboard()
+        .text("Подписка на курс: Золотая Корона").row()
+        .text("Подписка на курс: Garantex").row()
+        .text("Получение Спредов ЗК + Garantex").row()
+        .text("Отмена")
+        .oneTime()
+        .resized();
+    await ctx.reply('Выберите подписку', {reply_markup: keyboard})
+
+    const titleCtx = await conversation.waitFor("message:text");
+    if (titleCtx.msg.text == "Подписка на курс: Золотая Корона") {
+        return ctx.reply("Создание новой подписки:", {reply_markup: koronaSubscriptionMenu})
+    }
+    if (titleCtx.msg.text == "Подписка на курс: Garantex") {
+        return garantexCreateSubscription(conversation, ctx);
+    }
+    if (titleCtx.msg.text == "Получение Спредов ЗК + Garantex") {
+        return spreadConversation(conversation, ctx)
+    }
+    return ctx.reply("", {reply_markup: {remove_keyboard: true}});
+}
+
+bot.use(koronaSubscriptionMenu)
+bot.use(garantexSubscriptionMenu)
+bot.use(spreadSubscriptionMenu)
+bot.use(unsubscribeMenu)
+
+bot.use(conversations());
+bot.use(createConversation(movie, "subscription-main"));
+bot.use(createConversation(garantexOnlySubscription, "garantex-only-trial-subscription"));
+bot.use(createConversation(spreadConversation, "spread-subscription"));
+
+bot.command('rates', async (ctx) => {
+    await exchangeRateService.getAllRates(ctx)
+})
+
+bot.command('subscribe', async ctx => {
+    await ctx.conversation.enter("subscription-main");
+})
+
+bot.command('payments', async ctx => {
+    await ctx.conversation.enter("garantex-only-trial-subscription");
+})
+
+bot.command('unsubscribe',
+    async ctx => {
+        const messages = await formatUnsubscribeText(ctx.user.userId)
+        messages.push("")
+        messages.push("Нажмите на подписку, которую надо удалить")
+
+        return ctx.reply(messages.join("\n"), {reply_markup: unsubscribeMenu})
+    })
+
+bot.command("list", async ctx => {
+    const messages = await formatUnsubscribeText(ctx.user.userId)
+    messages.unshift("Активные подписки:")
+    messages.unshift("")
+
+    messages.push("")
+    messages.push("Чтобы отписаться команда /unsubscribe")
+
+    return ctx.reply(messages.join("\n"))
+})
+
+bot.command(['help', 'start'], async ctx => {
+    const text = 'Привет!\n' +
+        'Я показываю курсы валют в Золотой Короне.\n' +
+        '/rates курсы валют по всем странам.\n' +
+        '/subscribe чтобы подписаться на уведомления. \n' +
+        '/unsubscribe - отписаться. \n' +
+        '/list показывает активные подписки \n' +
+        '/help для помощи\n' +
+        '/support ссылка на группу помощи по боту.\n' +
+        'За помощью, вопросами и предложениями по работе бота пишите в группу @KoronaWatcherSupportBot'
+
+    await ctx.reply(text)
+})
+
+bot.command('debug', async ctx => {
+    await ctx.reply(`userId = ${ctx.user.userId}`)
+})
+
+bot.catch((err) => {
+    const ctx = err.ctx;
+    console.error(`Error while handling update ${ctx.update.update_id}:`);
+    const e = err.error;
+    if (e instanceof GrammyError) {
+        console.error("Error in request:", e.description);
+    } else if (e instanceof HttpError) {
+        console.error("Could not contact Telegram:", e);
+    } else {
+        console.error("Unknown error:", e);
+    }
+});
+
+bot.start()
