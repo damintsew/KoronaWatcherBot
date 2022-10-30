@@ -24,7 +24,6 @@ export class PaymentValidationWizard {
     }
 
     async trialValidator(conversation: MyConversation, ctx: NewContext, config: Config) {
-
         const trial = this.findTrial(ctx.user?.subscriptions, config.subscriptionId)
         const activeSubscription = this.findPredicate(ctx.user.subscriptions,
             s => s.type == config.subscriptionId)
@@ -36,10 +35,8 @@ export class PaymentValidationWizard {
 
         if (this.isSubscriptionActive(trial) || activeSubscription) {
             await ctx.reply("Оформление подписки Garantex", config.onSuccess)
-            return;
         } else {
             await this.activateSubscription(conversation, ctx, config)
-            return
         }
     }
 
@@ -129,15 +126,7 @@ export class PaymentValidationWizard {
     }
 
     private findActiveSubscriptions(subscriptions: PaymentSubscription[]) {
-        const result = []
-        const now = moment()
-        for (let s of subscriptions) {
-            if (now.isBetween(s.startDate, s.expirationDate)) {
-                result.push(s)
-            }
-        }
-
-        return result;
+        return subscriptions.filter(this.isSubscriptionActive);
     }
 
     private isSubscriptionActive(s: PaymentSubscription) {

@@ -1,27 +1,29 @@
-import {LocalUser} from "./entity/LocalUser";
-import {Equal, getManager} from "typeorm";
-import {Announcements} from "./entity/Announcements";
-import {Telegram} from "telegraf";
-import {ds} from "./data-source";
-import {delay} from "./Util";
-import {SendToUser} from "./entity/announcement/SendToUser";
+import {LocalUser} from "../entity/LocalUser";
+import {Announcements} from "../entity/Announcements";
+import {ds} from "../data-source";
+import {delay} from "../Util";
+import {SendToUser} from "../entity/announcement/SendToUser";
 import {Api} from "@grammyjs/menu/out/deps.node";
+import {Service} from "typedi";
+import {Bot} from "grammy";
+import {NewContext} from "../bot_config/Domain2";
 
-export class MessageAnouncerService {
+@Service()
+export class GlobalMessageAnnouncerService {
 
     tg: Api;
 
-    constructor(tg: Api) {
-        this.tg = tg;
+    constructor(botApi: Bot<NewContext>) {
+        this.tg = botApi.api;
     }
 
-    async announce() {
+    async globalMessageAnnounce() {
 
         const announcements = await ds.getRepository(Announcements)
             .createQueryBuilder("ann")
             .leftJoinAndSelect("ann.sendToUser", "sent")
             .leftJoinAndSelect("sent.user", "userz")
-            .where({ isSent: false })
+            .where({isSent: false})
             .getMany()
 
         if (announcements.length == 0) {
@@ -100,6 +102,10 @@ export class MessageAnouncerService {
     }
 
     private messageAlreadySent(sentMessages: SendToUser[], userId: number) {
-        return sentMessages.some( m => m.user.userId == userId)
+        return sentMessages.some(m => m.user.userId == userId)
+    }
+
+    async sendMessage(user: LocalUser, message: string) {
+        return this.tg.sendMessage(user.userId, message);
     }
 }

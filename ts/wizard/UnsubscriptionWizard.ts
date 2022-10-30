@@ -7,6 +7,12 @@ import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {BaseSubscription} from "../entity/subscription/BaseSubscription";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
+import {Container} from "typedi";
+import {PaymentSubscriptionService} from "../service/PaymentSubscriptionService";
+import moment from "moment";
+
+
+const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {
@@ -116,6 +122,20 @@ async function formatUnsubscribeText(userId: number) {
     const baseSubscriptions = await subscriptionService.getBaseSubscriptions(userId) //as SubscriptionThresholdData[]
     for (const subscription of baseSubscriptions) {
         messages.push(formatTextMessage(subscription))
+    }
+
+    const paymentSubs = await paymentSubscriptionService.getActiveSubscription(userId)
+    if (paymentSubs.length > 0) {
+        messages.push("", "Платные подписки:")
+        for (let paym of paymentSubs) {
+            let msg = `${paym.type}, заканчивается ${moment(paym.expirationDate).format("DD.MM.YYY HH:ss")}`
+            if (paym.trial) {
+                msg += " Триальная подписка"
+            }
+            messages.push(msg)
+        }
+    } else {
+        messages.push("", "У вас нет платных подписок.")
     }
 
     return messages;

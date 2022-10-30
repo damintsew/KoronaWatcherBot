@@ -6,7 +6,7 @@ import {ExchangeRatesDao} from "./dao/ExchangeRatesDao";
 import {CronJobService} from "./service/CronJobService";
 import {ThresholdNotificationService} from "./service/ThresholdNotificationService";
 import {ScheduledNotificationService} from "./service/ScheduledNotificationService";
-import {MessageAnouncerService} from "./MessageAnouncerService";
+import {GlobalMessageAnnouncerService} from "./service/GlobalMessageAnnouncerService";
 import {GarantexService} from "./service/GarantexService";
 import {GarantexDao} from "./dao/GarantexDao";
 import {Bot} from "grammy";
@@ -44,9 +44,8 @@ const exchangeRateService = new ExchangeRatesService(exchangeRatesDao, statistic
 
 const notificationService = new ThresholdNotificationService(bot.api, eventProcessor)
 const scheduledNotificationService = new ScheduledNotificationService(bot.api, subscriptionService)
-const messageAnnouncerService = new MessageAnouncerService(bot.api)
 const garantexService = new GarantexService(exchangeRatesDao, garantexDao, subscriptionService, eventProcessor, bot.api)
-const cronJobService = new CronJobService(notificationService, messageAnnouncerService, scheduledNotificationService,
+const cronJobService = new CronJobService(notificationService, scheduledNotificationService,
     garantexService)
 
 export {

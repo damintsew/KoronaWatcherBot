@@ -1,8 +1,10 @@
 import {CronJob} from 'cron';
 import {ThresholdNotificationService} from "./ThresholdNotificationService";
-import {MessageAnouncerService} from "../MessageAnouncerService";
+import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {ScheduledNotificationService} from "./ScheduledNotificationService";
 import {GarantexService} from "./GarantexService";
+import {Container} from "typedi";
+import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
 
 export class CronJobService {
 
@@ -11,15 +13,17 @@ export class CronJobService {
     everyHourJob: CronJob;
     notificationService: ThresholdNotificationService
     scheduledNotificationService: ScheduledNotificationService
-    messageAnouncerService: MessageAnouncerService
+    messageAnouncerService: GlobalMessageAnnouncerService
+        paymentSubscriptionService: PaymentSubscriptionService
     garantexService: GarantexService
 
     constructor(notificationService: ThresholdNotificationService,
-                messageAnouncerService: MessageAnouncerService,
+                // public messageAnouncerService: MessageAnouncerService,
                 scheduledNotificationService: ScheduledNotificationService,
                 garantexService: GarantexService) {
         this.notificationService = notificationService;
-        this.messageAnouncerService = messageAnouncerService;
+        this.messageAnouncerService = Container.get(GlobalMessageAnnouncerService);
+        this.paymentSubscriptionService = Container.get(PaymentSubscriptionService);
         this.scheduledNotificationService = scheduledNotificationService;
         this.garantexService = garantexService;
         this.everySecondJob = new CronJob('*/1 * * * * *', async () => {
@@ -74,7 +78,8 @@ export class CronJobService {
     async hourAction(): Promise<void> {
         console.log("Hour")
         await this.scheduledNotificationService.process()
-        await this.messageAnouncerService.announce();
+        await this.messageAnouncerService.globalMessageAnnounce();
+        await this.paymentSubscriptionService.findOutdatedSubscriptionsAndNotifyUser();
     }
 
     stop() {

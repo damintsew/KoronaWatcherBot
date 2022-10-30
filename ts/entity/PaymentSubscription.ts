@@ -1,5 +1,6 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique} from "typeorm";
+import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique} from "typeorm";
 import {LocalUser} from "./LocalUser";
+import {PaymentSubscriptionNotification} from "./PaymentSubscriptionNotification";
 
 @Entity('payment_subscription')
 @Unique("constraint_unique_payment_subscription", ['type', "user", "trial"])
@@ -22,4 +23,8 @@ export class PaymentSubscription {
 
     @Column()
     trial: boolean
+
+    @OneToMany(() => PaymentSubscriptionNotification,
+        subscr => subscr.subscription, {cascade: ["insert", "update", "remove"]})
+    subscriptionNotifications: PaymentSubscriptionNotification[]
 }
