@@ -7,13 +7,14 @@ import {Api} from "@grammyjs/menu/out/deps.node";
 import {Service} from "typedi";
 import {Bot} from "grammy";
 import {NewContext} from "../bot_config/Domain2";
+import {UserDao} from "../dao/UserDao";
 
 @Service()
 export class GlobalMessageAnnouncerService {
 
     tg: Api;
 
-    constructor(botApi: Bot<NewContext>) {
+    constructor(botApi: Bot<NewContext>, public userDao: UserDao) {
         this.tg = botApi.api;
     }
 
@@ -106,6 +107,12 @@ export class GlobalMessageAnnouncerService {
     }
 
     async sendMessage(user: LocalUser, message: string) {
-        return this.tg.sendMessage(user.userId, message);
+        return this.tg.sendMessage(user.userId, message)
+            .catch(reason => {
+                if (reason.error_code == 403) {
+                    user.deletionMark = true
+                }
+                return this.userDao.updateUser(user)
+            });
     }
 }

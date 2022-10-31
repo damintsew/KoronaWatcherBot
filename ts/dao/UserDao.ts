@@ -24,4 +24,8 @@ export class UserDao {
             .where({'isAdmin': true})
             .getMany()
     }
+
+    updateUser(user: LocalUser) {
+        return ds.manager.save(user)
+    }
 }

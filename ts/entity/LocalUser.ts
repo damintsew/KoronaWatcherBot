@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, OneToMany} from "typeorm";
+import {Column, Entity, OneToMany, PrimaryColumn} from "typeorm";
 import {PaymentSubscription} from "./PaymentSubscription";
 
 @Entity("user")
@@ -25,5 +25,8 @@ export class LocalUser {
     @OneToMany(() => PaymentSubscription,
         subscr => subscr.user)
     subscriptions: PaymentSubscription[]
+
+    @Column({nullable: false, default: false})
+    deletionMark: boolean
 
 }
