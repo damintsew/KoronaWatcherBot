@@ -1,4 +1,5 @@
 import {SubscriptionService} from "./SubscriptionService";
+import {User} from "@grammyjs/menu/out/deps.node";
 import {UserDao} from "../dao/UserDao";
 import {Service} from "typedi";
 

@@ -5,6 +5,15 @@ import {MyConversation, NewContext, SessionData} from "./bot_config/Domain2";
 import {conversations, createConversation,} from "@grammyjs/conversations";
 import {GrammyError, HttpError, Keyboard} from '@grammyjs/conversations/out/deps.node';
 import {Container} from "typedi";
+
+const token = env.TG_TOKEN
+if (token === undefined) {
+    throw new Error('TG_TOKEN must be provided!')
+}
+const bot = new Bot<NewContext>(token)
+
+Container.set(Bot, bot);
+
 import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
 import {ds} from "./data-source";
 import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
@@ -18,15 +27,6 @@ import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscri
 import {UserService} from "./service/UserService";
 import {ExchangeRatesService} from "./service/ExchangeRatesService";
 import {CronJobService} from "./service/CronJobService";
-
-const token = env.TG_TOKEN
-if (token === undefined) {
-    throw new Error('TG_TOKEN must be provided!')
-}
-const bot = new Bot<NewContext>(token)
-
-Container.set(Bot, bot);
-
 // import {Bot as Bt} from "grammy/out/bot";
 
 (async function () {

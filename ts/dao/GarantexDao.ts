@@ -1,7 +1,7 @@
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import {Buffer} from 'buffer';
+import { Buffer } from 'buffer';
 import {TradesResponse} from "../dto/garantex/TradesResponse";
 import {Service} from "typedi";
 

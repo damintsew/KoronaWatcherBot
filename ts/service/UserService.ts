@@ -1,4 +1,4 @@
-import {User} from "@grammyjs/menu/out/deps.node";
+import { User } from "@grammyjs/menu/out/deps.node";
 import {UserDao} from "../dao/UserDao";
 import {LocalUser} from "../entity/LocalUser";
 import {Service} from "typedi";

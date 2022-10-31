@@ -7,6 +7,7 @@ import {KoronaGarantexSpreadService} from "./KoronaGarantexSpreadService";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {EventProcessor} from "../events/EventProcessor";
+import {ThresholdNotificationService} from "./ThresholdNotificationService";
 import {Service} from "typedi";
 
 @Service()
