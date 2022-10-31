@@ -23,12 +23,12 @@ unsubscribeMenu.dynamic(async (ctx) => {
         range.addRange(createButton(subscription))
     }
 
-    const scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.user.userId) //as SubscriptionThresholdData[]
+    const scheduledSubscriptions = await subscriptionService.getScheduledSubscriptionsByUser(ctx.user.userId)
     for (const subscription of scheduledSubscriptions) {
         range.addRange(createButton(subscription))
     }
 
-    const baseSubscriptions = await subscriptionService.getBaseSubscriptions(ctx.user.userId) //as SubscriptionThresholdData[]
+    const baseSubscriptions = await subscriptionService.getBaseSubscriptions(ctx.user.userId)
     for (const subscription of baseSubscriptions) {
         range.addRange(newButton(subscription))
     }

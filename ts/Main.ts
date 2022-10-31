@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import {Bot, session} from 'grammy'
-import {NewContext, SessionData, MyConversation} from "./bot_config/Domain2";
+import {MyConversation, NewContext, SessionData} from "./bot_config/Domain2";
 import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
 import {exchangeRateService, userService} from "./DiContainer";
 import {ds} from "./data-source";
@@ -58,7 +58,7 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
     const keyboard = new Keyboard()
         .text("Подписка на курс: Золотая Корона").row()
         .text("Подписка на курс: Garantex").row()
-        .text("Получение Спредов ЗК + Garantex").row()
+        .text("В разработке: Получение Спредов ЗК + Garantex").row()
         .text("Отмена")
         .oneTime()
         .resized();
@@ -71,8 +71,9 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
     if (titleCtx.msg.text == "Подписка на курс: Garantex") {
         return garantexCreateSubscription(conversation, ctx);
     }
-    if (titleCtx.msg.text == "Получение Спредов ЗК + Garantex") {
-        return spreadConversation(conversation, ctx)
+    if (titleCtx.msg.text == "В разработке: Получение Спредов ЗК + Garantex") {
+        return ctx.reply("В разработке! Скоро будет!", {reply_markup: {remove_keyboard: true}});
+        // return spreadConversation(conversation, ctx)
     }
     return ctx.reply("", {reply_markup: {remove_keyboard: true}});
 }

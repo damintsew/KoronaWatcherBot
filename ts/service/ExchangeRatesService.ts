@@ -1,5 +1,5 @@
 import {ExchangeRatesDao} from "../dao/ExchangeRatesDao";
-import {mapCountryToFlag} from "./FlagUtilities";
+import {findCountryByCode, mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment";
 import {StatisticService} from "./StatisticService";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
@@ -27,7 +27,8 @@ export class ExchangeRatesService {
         if (rates.length > 0) {
             messages.push(`Курсы валют в Короне на: ${this.formatDate(rates[0].dateTime)}`)
             for (const rate of rates) {
-                const msg = `${mapCountryToFlag(rate.country)}  ${rate.currency}  ${rate.value}`
+                const msg = `${mapCountryToFlag(rate.country)}  ${rate.currency}  ${rate.value} ` +
+                    `${findCountryByCode(rate.country).text}`
                 messages.push(msg);
             }
         } else {
