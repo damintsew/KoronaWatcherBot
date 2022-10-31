@@ -6,9 +6,11 @@ import {GarantexSubscription} from "../entity/subscription/GarantexSubscription"
 import {Api} from "@grammyjs/menu/out/deps.node";
 import {EventProcessor} from "../events/EventProcessor";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
-import {Container} from "typedi";
+import {Container, Service} from "typedi";
+import {Bot} from "grammy";
+import {NewContext} from "../bot_config/Domain2";
 
-
+@Service()
 export class GarantexService {
 
     private exchangeRatesDao: ExchangeRatesDao;
@@ -22,12 +24,12 @@ export class GarantexService {
                 garantexDao: GarantexDao,
                 subscriptionService: SubscriptionService,
                 eventProcessor: EventProcessor,
-                tgApi: Api) {
+                botApi: Bot<NewContext>) {
         this.exchangeRatesDao = exchangeRatesDao;
         this.garantexDao = garantexDao;
         this.subscriptionService = subscriptionService;
         this.eventProcessor = eventProcessor;
-        this.tgApi = tgApi;
+        this.tgApi = botApi.api;
         this.paymentValidatorService = Container.get(PaymentSubscriptionService)
     }
 

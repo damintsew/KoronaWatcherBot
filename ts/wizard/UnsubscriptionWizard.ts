@@ -1,6 +1,5 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {NewContext} from "../bot_config/Domain2";
-import {subscriptionService} from "../DiContainer";
 import {findCountryByCode} from "../service/FlagUtilities";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
@@ -10,9 +9,12 @@ import {GarantexSubscription} from "../entity/subscription/GarantexSubscription"
 import {Container} from "typedi";
 import {PaymentSubscriptionService} from "../service/PaymentSubscriptionService";
 import moment from "moment";
+import {SubscriptionService} from "../service/SubscriptionService";
 
 
 const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
+const subscriptionService = Container.get(SubscriptionService);
+
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {

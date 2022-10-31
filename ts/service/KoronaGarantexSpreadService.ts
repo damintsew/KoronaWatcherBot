@@ -3,8 +3,16 @@ import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {SpreadReferenceData} from "../entity/subscription/SpreadReferenceData";
 import {ds} from "../data-source";
+import {Service} from "typedi";
+import {NewContext} from "../bot_config/Domain2";
+import {Bot} from "grammy";
 
+@Service()
 export class KoronaGarantexSpreadService extends SpreadBaseService {
+
+    constructor(botApi: Bot<NewContext>) {
+        super(botApi);
+    }
 
     async processBase(baseRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
         if (subscription.garantexLastNotifiedValue == null) {

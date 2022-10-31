@@ -3,28 +3,39 @@ import {ThresholdNotificationService} from "./ThresholdNotificationService";
 import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {ScheduledNotificationService} from "./ScheduledNotificationService";
 import {GarantexService} from "./GarantexService";
-import {Container} from "typedi";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
+import {UserCleanerService} from "./UserCleanerService";
+import {Service} from "typedi";
 
+@Service()
 export class CronJobService {
 
     everySecondJob: CronJob;
     everyMinuteJob: CronJob;
     everyHourJob: CronJob;
+
     notificationService: ThresholdNotificationService
     scheduledNotificationService: ScheduledNotificationService
     messageAnouncerService: GlobalMessageAnnouncerService
-        paymentSubscriptionService: PaymentSubscriptionService
+    paymentSubscriptionService: PaymentSubscriptionService
+    userCleanerService: UserCleanerService
+
     garantexService: GarantexService
 
     constructor(notificationService: ThresholdNotificationService,
-                // public messageAnouncerService: MessageAnouncerService,
+                messageAnouncerService: GlobalMessageAnnouncerService,
+                paymentSubscriptionService: PaymentSubscriptionService,
+                userCleanerService: UserCleanerService,
                 scheduledNotificationService: ScheduledNotificationService,
                 garantexService: GarantexService) {
         this.notificationService = notificationService;
-        this.messageAnouncerService = Container.get(GlobalMessageAnnouncerService);
-        this.paymentSubscriptionService = Container.get(PaymentSubscriptionService);
+
+        this.messageAnouncerService = messageAnouncerService;
+        this.paymentSubscriptionService = paymentSubscriptionService;
+        this.userCleanerService = userCleanerService
+
         this.scheduledNotificationService = scheduledNotificationService;
+
         this.garantexService = garantexService;
         this.everySecondJob = new CronJob('*/1 * * * * *', async () => {
             try {

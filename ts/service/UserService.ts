@@ -1,9 +1,12 @@
-import { User } from "@grammyjs/menu/out/deps.node";
+import {User} from "@grammyjs/menu/out/deps.node";
 import {UserDao} from "../dao/UserDao";
 import {LocalUser} from "../entity/LocalUser";
+import {Service} from "typedi";
 
+@Service()
 export class UserService {
     private userDao: UserDao;
+
     constructor(userDao: UserDao) {
         this.userDao = userDao
     }

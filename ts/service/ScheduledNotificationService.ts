@@ -4,15 +4,18 @@ import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment-timezone";
-import {Api} from "@grammyjs/menu/out/deps.node";
+import {Service} from "typedi";
+import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
+import {LocalUser} from "../entity/LocalUser";
 
+@Service()
 export class ScheduledNotificationService {
 
-    tg: Api;
+    messageSender: GlobalMessageAnnouncerService;
     subscriptionService: SubscriptionService
 
-    constructor(tg: Api, subscriptionService: SubscriptionService) {
-        this.tg = tg;
+    constructor(messageSender: GlobalMessageAnnouncerService, subscriptionService: SubscriptionService) {
+        this.messageSender = messageSender;
         this.subscriptionService = subscriptionService;
     }
 
@@ -49,20 +52,20 @@ export class ScheduledNotificationService {
             console.log(`!!!!Country=${subscription.country} UserId = ${subscription.user.userId} newValue = ${newValue} lastNotifiedValue = ${subscription.lastNotifiedValue} ` +
                 `difference is : ${difference}`)
 
-            await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
+            await this.notifyUser(countryCode, subscription.user, subscription.lastNotifiedValue, newValue);
             subscription.lastNotifiedValue = newValue;
             await ds.manager.getRepository(SubscriptionScheduledData)
                 .update(subscription.id, {lastNotifiedValue: newValue})
         }
     }
 
-    private async notifyUser(countryCode: string, userId: number, oldValue: number, newValue: number) {
+    private async notifyUser(countryCode: string, user: LocalUser, oldValue: number, newValue: number) {
         const sign = ScheduledNotificationService.getSign(newValue, oldValue);
         const flag = mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`
-        console.log("Sending message to user " + userId)
+        console.log("Sending message to user " + user.userId)
         try {
-            await this.tg.sendMessage(userId, text)
+            await this.messageSender.sendMessage(user, text)
         } catch (e) {
             console.log(e)
         }

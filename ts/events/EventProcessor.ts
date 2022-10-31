@@ -1,7 +1,9 @@
 import {EventListener} from "./EventListener";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
+import {Service} from "typedi";
 
 
+@Service()
 export class EventProcessor {
 
     private eventListeners: EventListener[] = [];

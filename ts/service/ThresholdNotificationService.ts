@@ -7,15 +7,18 @@ import {delay} from "../Util";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
 import {Api} from "@grammyjs/menu/out/deps.node";
 import {EventProcessor} from "../events/EventProcessor";
+import {Bot} from "grammy";
+import {NewContext} from "../bot_config/Domain2";
+import {Service} from "typedi";
 
-
+@Service()
 export class ThresholdNotificationService {
 
     tg: Api;
     eventProcessor: EventProcessor
 
-    constructor(tg: Api, eventProcessor: EventProcessor) {
-        this.tg = tg;
+    constructor(botApi: Bot<NewContext>, eventProcessor: EventProcessor) {
+        this.tg = botApi.api;
         this.eventProcessor = eventProcessor
     }
 

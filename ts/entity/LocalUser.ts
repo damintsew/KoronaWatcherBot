@@ -23,7 +23,7 @@ export class LocalUser {
     isAdmin: boolean
 
     @OneToMany(() => PaymentSubscription,
-        subscr => subscr.user)
+        subscr => subscr.user, {cascade: ["remove"]})
     subscriptions: PaymentSubscription[]
 
     @Column({nullable: false, default: false})

@@ -28,4 +28,16 @@ export class UserDao {
     updateUser(user: LocalUser) {
         return ds.manager.save(user)
     }
+
+    findUsersMarkedForDeletion() {
+        return ds.getRepository(LocalUser)
+            .createQueryBuilder("getUserById")
+            .leftJoinAndSelect("getUserById.subscriptions", "sent")
+            .where({'deletionMark': true})
+            .getMany()
+    }
+
+    async remove(user: LocalUser) {
+        return ds.manager.remove(user)
+    }
 }

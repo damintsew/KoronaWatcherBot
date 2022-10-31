@@ -1,25 +1,40 @@
 import 'reflect-metadata';
+import {env} from "node:process";
 import {Bot, session} from 'grammy'
 import {MyConversation, NewContext, SessionData} from "./bot_config/Domain2";
-import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
-import {exchangeRateService, userService} from "./DiContainer";
-import {ds} from "./data-source";
-import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
 import {conversations, createConversation,} from "@grammyjs/conversations";
 import {GrammyError, HttpError, Keyboard} from '@grammyjs/conversations/out/deps.node';
+import {Container} from "typedi";
+import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
+import {ds} from "./data-source";
+import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
+
 import {
     garantexCreateSubscription,
     garantexOnlySubscription,
     garantexSubscriptionMenu
 } from "./wizard/GarantexSubscriptionWizard";
 import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscriptionWizard";
-import {Container} from "typedi";
+import {UserService} from "./service/UserService";
+import {ExchangeRatesService} from "./service/ExchangeRatesService";
+import {CronJobService} from "./service/CronJobService";
+
+const token = env.TG_TOKEN
+if (token === undefined) {
+    throw new Error('TG_TOKEN must be provided!')
+}
+const bot = new Bot<NewContext>(token)
+
+Container.set(Bot, bot);
+
+// import {Bot as Bt} from "grammy/out/bot";
 
 (async function () {
     await ds.initialize(); //todo get rid of this
 })()
 
-const bot = Container.get(Bot) as Bot<NewContext>;
+const userService = Container.get(UserService);
+const exchangeRateService = Container.get(ExchangeRatesService);
 
 bot.api.setMyCommands([
     {command: 'rates', description: 'Показать текущий курс'},
@@ -152,3 +167,8 @@ bot.catch((err) => {
 });
 
 bot.start()
+
+const cronJobService = Container.get(CronJobService)
+// cronJobService.s
+
+

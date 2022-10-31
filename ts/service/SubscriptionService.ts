@@ -7,7 +7,9 @@ import {KoronaGarantexSpreadService} from "./KoronaGarantexSpreadService";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {EventProcessor} from "../events/EventProcessor";
+import {Service} from "typedi";
 
+@Service()
 export class SubscriptionService {
 
     private eventProcessor: EventProcessor
@@ -36,17 +38,18 @@ export class SubscriptionService {
     getThresholdSubscriptionsByUser(userId: number): Promise<Array<SubscriptionThresholdData>> {
         return ds.manager.getRepository(SubscriptionThresholdData)
             .createQueryBuilder("findSubscriptions")
-            .innerJoinAndSelect("findSubscriptions.user", "userJoin")
-            .where("userJoin.userId = :userId", {userId})
+            .innerJoinAndSelect("findSubscriptions.user", "user")
+            .where("user.userId = :userId and user.deletionMark = false", {userId})
             .getMany();
     }
 
     getScheduledSubscriptionsByCountryAndHour(countryCode: string, hour: number): Promise<Array<SubscriptionScheduledData>> {
         return ds.manager.getRepository(SubscriptionScheduledData)
             .createQueryBuilder("getScheduledSubscriptions")
-            .innerJoinAndSelect("getScheduledSubscriptions.user", "userJoin")
+            .innerJoinAndSelect("getScheduledSubscriptions.user", "user")
             .innerJoinAndSelect("getScheduledSubscriptions.triggerTime", "trigger")
             .where("trigger.timeHours = :hour and country = :countryCode",
+            // .where("trigger.timeHours = :hour and country = :countryCode and user.deletionMark = false",
                 {hour: hour, countryCode: countryCode})
             .getMany();
     }
@@ -128,6 +131,26 @@ export class SubscriptionService {
     async removeBaseSubscription(subscriptionId: number) {
         return ds.manager.getRepository(BaseSubscription)
             .delete(subscriptionId)
+    }
+
+    async removeSubscriptionsByUserId(userId: number) {
+        await ds.getRepository(BaseSubscription)
+            .createQueryBuilder("s")
+            .innerJoinAndSelect("s.user", "user")
+            .where("user.userId = :userId", {userId: userId})
+            .delete()
+        await ds.getRepository(SubscriptionThresholdData)
+            .createQueryBuilder("s")
+            .innerJoinAndSelect("s.user", "user")
+            .where("user.userId = :userId", {userId: userId})
+            .delete()
+
+         await ds.getRepository(SubscriptionScheduledData)
+            .createQueryBuilder("s")
+            .innerJoinAndSelect("s.user", "user")
+            .where("user.userId = :userId", {userId: userId})
+            .delete()
+
     }
 
     async getSubscriptionsByType<T extends BaseSubscription>(type: string): Promise<T[]> {

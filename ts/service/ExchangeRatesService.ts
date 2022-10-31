@@ -3,10 +3,10 @@ import {findCountryByCode, mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment";
 import {StatisticService} from "./StatisticService";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
-import {Container} from "typedi";
+import {Container, Service} from "typedi";
 import {LocalUser} from "../entity/LocalUser";
 
-
+@Service()
 export class ExchangeRatesService {
 
     private exchangeDao: ExchangeRatesDao;

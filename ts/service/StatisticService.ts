@@ -1,7 +1,9 @@
 import {LocalUser} from "../entity/LocalUser";
 import {ds} from "../data-source";
 import {Statistic} from "../entity/Statistic";
+import {Service} from "typedi";
 
+@Service()
 export class StatisticService {
 
     callRate(user: LocalUser) {

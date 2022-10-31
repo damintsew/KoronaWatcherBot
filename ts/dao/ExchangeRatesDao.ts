@@ -1,8 +1,9 @@
 import {ds} from "../data-source";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {In} from "typeorm";
+import {Service} from "typedi";
 
-
+@Service()
 export class ExchangeRatesDao {
 
     async getAllKoronaRates() {

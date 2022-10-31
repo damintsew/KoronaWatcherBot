@@ -1,14 +1,13 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {MyConversation, NewContext} from "../bot_config/Domain2";
-import {subscriptionService} from "../DiContainer";
-import {PaymentSubscription} from "../entity/PaymentSubscription";
-import moment from "moment/moment";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
 import {QueryFailedError} from "typeorm";
 import {Container} from "typedi";
 import {PaymentValidationWizard} from "./PaymentValidationWizard";
+import {SubscriptionService} from "../service/SubscriptionService";
 
 const paymentValidationWizard = Container.get(PaymentValidationWizard);
+const subscriptionService = Container.get(SubscriptionService);
 
 async function garantexCreateSubscription(conversation: MyConversation, ctx: NewContext) {
     return paymentValidationWizard.trialValidator(conversation, ctx, {
@@ -18,6 +17,7 @@ async function garantexCreateSubscription(conversation: MyConversation, ctx: New
         onSuccess: {reply_markup: garantexSubscriptionMenu, remove_keyboard: true}
     })
 }
+
 async function garantexOnlySubscription(conversation: MyConversation, ctx: NewContext) {
     return paymentValidationWizard.trialValidator(conversation, ctx, {
         subscriptionId: "GARANTEX",

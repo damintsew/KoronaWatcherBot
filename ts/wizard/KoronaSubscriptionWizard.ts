@@ -4,7 +4,8 @@ import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {NewContext} from "../bot_config/Domain2";
-import {subscriptionService} from "../DiContainer";
+import {Container} from "typedi";
+import {SubscriptionService} from "../service/SubscriptionService";
 
 /** This is how the dishes look that this bot is managing */
 interface Dish { //todo rename
@@ -12,6 +13,8 @@ interface Dish { //todo rename
     id: string,
     selected: boolean
 }
+
+const subscriptionService = Container.get(SubscriptionService);
 
 const koronaSubscriptionMenu = new Menu<NewContext>('korona-subscription-menu')
 koronaSubscriptionMenu.dynamic(() => {
