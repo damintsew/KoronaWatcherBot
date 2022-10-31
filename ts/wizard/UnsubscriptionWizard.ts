@@ -11,10 +11,8 @@ import {PaymentSubscriptionService} from "../service/PaymentSubscriptionService"
 import moment from "moment";
 import {SubscriptionService} from "../service/SubscriptionService";
 
-
 const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
 const subscriptionService = Container.get(SubscriptionService);
-
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {
