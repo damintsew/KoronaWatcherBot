@@ -27,4 +27,6 @@ jobs:
         with:
           push: true
           tags: damintsew/korona-watcher-bot:latest
+          cache-from: type=registry,ref=damintsew/korona-watcher-bot:latest
+          cache-to: type=inline
 
