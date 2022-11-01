@@ -49,7 +49,7 @@ export class SubscriptionService {
             .createQueryBuilder("findSubscriptions")
             .innerJoinAndSelect("findSubscriptions.user", "user")
             .where("user.userId = :userId " +
-                "and user.deletionMark = false" +
+                "and user.deletionMark = false " +
                 "and findSubscriptions.country == :country", {country: countryCode})
             .getMany();
     }
