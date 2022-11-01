@@ -1,6 +1,6 @@
 import {PaymentSubscription} from "../entity/PaymentSubscription";
 import moment from "moment";
-import {MyConversation, NewContext} from "../bot_config/Domain2";
+import {MyConversation, NewContext} from "../bot_config/Domain";
 import {Keyboard} from "@grammyjs/conversations/out/deps.node";
 import {Service} from "typedi";
 import {PaymentSubscriptionService} from "../service/PaymentSubscriptionService";

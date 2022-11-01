@@ -23,14 +23,14 @@ export class CronJobService {
     garantexService: GarantexService
 
     constructor(notificationService: ThresholdNotificationService,
-                messageAnouncerService: GlobalMessageAnnouncerService,
+                messageAnnouncerService: GlobalMessageAnnouncerService,
                 paymentSubscriptionService: PaymentSubscriptionService,
                 userCleanerService: UserCleanerService,
                 scheduledNotificationService: ScheduledNotificationService,
                 garantexService: GarantexService) {
         this.notificationService = notificationService;
 
-        this.messageAnouncerService = messageAnouncerService;
+        this.messageAnouncerService = messageAnnouncerService;
         this.paymentSubscriptionService = paymentSubscriptionService;
         this.userCleanerService = userCleanerService
 

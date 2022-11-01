@@ -1,5 +1,5 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
-import {MyConversation, NewContext} from "../bot_config/Domain2";
+import {MyConversation, NewContext} from "../bot_config/Domain";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
 import {QueryFailedError} from "typeorm";
 import {Container} from "typedi";

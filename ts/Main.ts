@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import {env} from "node:process";
 import {Bot, session} from 'grammy'
-import {MyConversation, NewContext, SessionData} from "./bot_config/Domain2";
+import {MyConversation, NewContext, SessionData} from "./bot_config/Domain";
 import {conversations, createConversation,} from "@grammyjs/conversations";
 import {GrammyError, HttpError, Keyboard} from '@grammyjs/conversations/out/deps.node';
 import {Container} from "typedi";
@@ -27,7 +27,6 @@ import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscri
 import {UserService} from "./service/UserService";
 import {ExchangeRatesService} from "./service/ExchangeRatesService";
 import {CronJobService} from "./service/CronJobService";
-// import {Bot as Bt} from "grammy/out/bot";
 
 (async function () {
     await ds.initialize(); //todo get rid of this
@@ -63,6 +62,9 @@ bot.use(async (ctx, next) => {
         let user = await userService.getUser(ctx.from.id)
         if (user == null) {
             user = await userService.createUser(ctx.from)
+        }
+        if (user.deletionMark) {
+            await userService.activeUser(user)
         }
         ctx.user = user
     }
@@ -169,6 +171,5 @@ bot.catch((err) => {
 bot.start()
 
 const cronJobService = Container.get(CronJobService)
-// cronJobService.s
 
 

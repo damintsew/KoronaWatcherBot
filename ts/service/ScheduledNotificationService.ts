@@ -6,7 +6,7 @@ import {countries, mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment-timezone";
 import {Api} from "@grammyjs/menu/out/deps.node";
 import {Bot} from "grammy";
-import {NewContext} from "../bot_config/Domain2";
+import {NewContext} from "../bot_config/Domain";
 import {Service} from "typedi";
 import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {LocalUser} from "../entity/LocalUser";

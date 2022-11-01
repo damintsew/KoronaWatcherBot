@@ -1,5 +1,5 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
-import {NewContext} from "../bot_config/Domain2";
+import {NewContext} from "../bot_config/Domain";
 import {findCountryByCode} from "../service/FlagUtilities";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";

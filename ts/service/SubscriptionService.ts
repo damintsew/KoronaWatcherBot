@@ -44,6 +44,16 @@ export class SubscriptionService {
             .getMany();
     }
 
+    getAllThresholdSubscriptionsWithActiveUser(countryCode: string): Promise<Array<SubscriptionThresholdData>> {
+        return ds.manager.getRepository(SubscriptionThresholdData)
+            .createQueryBuilder("findSubscriptions")
+            .innerJoinAndSelect("findSubscriptions.user", "user")
+            .where("user.userId = :userId " +
+                "and user.deletionMark = false" +
+                "and findSubscriptions.country == :country", {country: countryCode})
+            .getMany();
+    }
+
     getScheduledSubscriptionsByCountryAndHour(countryCode: string, hour: number): Promise<Array<SubscriptionScheduledData>> {
         return ds.manager.getRepository(SubscriptionScheduledData)
             .createQueryBuilder("getScheduledSubscriptions")

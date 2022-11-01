@@ -6,7 +6,7 @@ import {SendToUser} from "../entity/announcement/SendToUser";
 import {Api} from "@grammyjs/menu/out/deps.node";
 import {Service} from "typedi";
 import {Bot} from "grammy";
-import {NewContext} from "../bot_config/Domain2";
+import {NewContext} from "../bot_config/Domain";
 import {UserDao} from "../dao/UserDao";
 
 @Service()

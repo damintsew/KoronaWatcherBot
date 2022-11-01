@@ -3,7 +3,7 @@ import {countries} from "../service/FlagUtilities";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {TimeUnit} from "../entity/TimeUnit";
-import {NewContext} from "../bot_config/Domain2";
+import {NewContext} from "../bot_config/Domain";
 import {Container} from "typedi";
 import {SubscriptionService} from "../service/SubscriptionService";
 

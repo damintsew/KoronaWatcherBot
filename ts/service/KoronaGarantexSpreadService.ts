@@ -4,7 +4,7 @@ import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGar
 import {SpreadReferenceData} from "../entity/subscription/SpreadReferenceData";
 import {ds} from "../data-source";
 import {Service} from "typedi";
-import {NewContext} from "../bot_config/Domain2";
+import {NewContext} from "../bot_config/Domain";
 import {Bot} from "grammy";
 
 @Service()

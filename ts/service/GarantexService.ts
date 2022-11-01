@@ -8,7 +8,7 @@ import {EventProcessor} from "../events/EventProcessor";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
 import {Container, Service} from "typedi";
 import {Bot} from "grammy";
-import {NewContext} from "../bot_config/Domain2";
+import {NewContext} from "../bot_config/Domain";
 
 @Service()
 export class GarantexService {

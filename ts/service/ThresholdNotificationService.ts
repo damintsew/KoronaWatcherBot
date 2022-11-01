@@ -1,24 +1,23 @@
-import {Equal} from "typeorm";
 import {KoronaDao} from "../dao/KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {delay} from "../Util";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
-import {Api} from "@grammyjs/menu/out/deps.node";
 import {EventProcessor} from "../events/EventProcessor";
-import {Bot} from "grammy";
-import {NewContext} from "../bot_config/Domain2";
 import {Service} from "typedi";
+import {SubscriptionService} from "./SubscriptionService";
+import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
+import {LocalUser} from "../entity/LocalUser";
 
 @Service()
 export class ThresholdNotificationService {
 
-    tg: Api;
     eventProcessor: EventProcessor
 
-    constructor(botApi: Bot<NewContext>, eventProcessor: EventProcessor) {
-        this.tg = botApi.api;
+    constructor(public messageAnnouncer: GlobalMessageAnnouncerService,
+                eventProcessor: EventProcessor,
+                public subscriptionService: SubscriptionService) {
         this.eventProcessor = eventProcessor
     }
 
@@ -63,7 +62,7 @@ export class ThresholdNotificationService {
 
             try {
                 if (difference >= subscription.notificationThreshold) {
-                    await this.notifyUser(countryCode, subscription.user.userId, subscription.lastNotifiedValue, newValue);
+                    await this.notifyUser(countryCode, subscription.user, subscription.lastNotifiedValue, newValue);
                     subscription.lastNotifiedValue = newValue;
                     await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
                 }
@@ -75,23 +74,20 @@ export class ThresholdNotificationService {
         await delay(500)
     }
 
-    private async notifyUser(countryCode: string, userId: number, oldValue: number, newValue: number) {
+    private async notifyUser(countryCode: string, user: LocalUser, oldValue: number, newValue: number) {
         const sign = newValue > oldValue ? "⬆️" : "⬇️";
         const flag = mapCountryToFlag(countryCode);
         const text = `${flag} ${sign} 1$ = ${newValue}`
-        console.log("Sending message to user " + userId)
+        console.log("Sending message to user " + user.userId)
         try {
-            await this.tg.sendMessage(userId, text)
+            return this.messageAnnouncer.sendMessage(user, text)
         } catch (e) {
             console.log(e)
         }
     }
 
-    private async getSubscriptions(countryCode: string) {
-        return ds.manager.find(SubscriptionThresholdData, {
-            where: {country: Equal(countryCode)},
-            relations: ["user"]
-        });
+    private getSubscriptions(countryCode: string) {
+        return this.subscriptionService.getAllThresholdSubscriptionsWithActiveUser(countryCode)
     }
 
     private calculateDifference(currentValue: number, newValue: number): number {
