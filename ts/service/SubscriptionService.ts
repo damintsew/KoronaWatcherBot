@@ -48,8 +48,7 @@ export class SubscriptionService {
         return ds.manager.getRepository(SubscriptionThresholdData)
             .createQueryBuilder("findSubscriptions")
             .innerJoinAndSelect("findSubscriptions.user", "user")
-            .where("user.userId = :userId " +
-                "and user.deletionMark = false " +
+            .where("user.deletionMark = false " +
                 "and findSubscriptions.country == :country", {country: countryCode})
             .getMany();
     }

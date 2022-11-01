@@ -11,7 +11,7 @@ import {Service} from "typedi";
 export class CronJobService {
 
     everySecondJob: CronJob;
-    everyMinuteJob: CronJob;
+    everyFiveJob: CronJob;
     everyHourJob: CronJob;
 
     notificationService: ThresholdNotificationService
@@ -44,7 +44,7 @@ export class CronJobService {
                 console.error(e);
             }
         });
-        this.everyMinuteJob = new CronJob('0 */5 * * * *', async () => {
+        this.everyFiveJob = new CronJob('0 */5 * * * *', async () => {
             try {
                 await this.minuteAction();
             } catch (e) {
@@ -63,8 +63,8 @@ export class CronJobService {
         if (!this.everySecondJob.running) {
             this.everySecondJob.start();
         }
-        if (!this.everyMinuteJob.running) {
-            this.everyMinuteJob.start();
+        if (!this.everyFiveJob.running) {
+            this.everyFiveJob.start();
         }
         if (!this.everyHourJob.running) {
             this.everyHourJob.start();
@@ -97,8 +97,8 @@ export class CronJobService {
         if (this.everySecondJob.running) {
             this.everySecondJob.stop();
         }
-        if (this.everyMinuteJob.running) {
-            this.everyMinuteJob.stop();
+        if (this.everyFiveJob.running) {
+            this.everyFiveJob.stop();
         }
         if (this.everyHourJob.running) {
             this.everyHourJob.stop();
