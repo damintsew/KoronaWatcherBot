@@ -44,7 +44,7 @@ export class CronJobService {
                 console.error(e);
             }
         });
-        this.everyMinuteJob = new CronJob('0 */1 * * * *', async () => {
+        this.everyMinuteJob = new CronJob('0 */5 * * * *', async () => {
             try {
                 await this.minuteAction();
             } catch (e) {
