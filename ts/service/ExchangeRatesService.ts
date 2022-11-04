@@ -67,4 +67,8 @@ export class ExchangeRatesService {
     private formatDate(date: Date): string {
         return moment(date).tz("Turkey").format("HH:mm:ss  DD.MM")
     }
+
+    getRate(countryCode: string, korona: string) {
+        return this.exchangeDao.getKoronaRate(countryCode);
+    }
 }

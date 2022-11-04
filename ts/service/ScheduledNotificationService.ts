@@ -4,12 +4,10 @@ import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment-timezone";
-import {Api} from "@grammyjs/menu/out/deps.node";
-import {Bot} from "grammy";
-import {NewContext} from "../bot_config/Domain";
 import {Service} from "typedi";
 import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {LocalUser} from "../entity/LocalUser";
+import {ExchangeRatesService} from "./ExchangeRatesService";
 
 @Service()
 export class ScheduledNotificationService {
@@ -17,7 +15,9 @@ export class ScheduledNotificationService {
     messageSender: GlobalMessageAnnouncerService;
     subscriptionService: SubscriptionService
 
-    constructor(messageSender: GlobalMessageAnnouncerService, subscriptionService: SubscriptionService) {
+    constructor(messageSender: GlobalMessageAnnouncerService,
+                subscriptionService: SubscriptionService,
+                public exchangeRatesService: ExchangeRatesService) {
         this.messageSender = messageSender;
         this.subscriptionService = subscriptionService;
     }
@@ -42,7 +42,11 @@ export class ScheduledNotificationService {
 
         let newValue: number;
         if (subscriptions.length > 0) {
-            newValue = await KoronaDao.call(countryCode);
+            newValue = await KoronaDao.call(countryCode)
+        }
+
+        if (newValue == null) {
+            newValue = (await this.exchangeRatesService.getRate(countryCode, "KORONA"))?.value;
         }
 
         for (let subscription of subscriptions) {
