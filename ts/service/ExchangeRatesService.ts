@@ -35,12 +35,12 @@ export class ExchangeRatesService {
             messages.push("Что-то сломалось. По Короне нет данных по курсам валют. Пишите в /support")
         }
 
-        messages.push(...await this.garantexRates(ctx.user));
+        messages.push(...await this.garantexRatesWithValidation(ctx.user));
 
         ctx.reply(messages.join("\n"))
     }
 
-    private async garantexRates(user: LocalUser) {
+    private async garantexRatesWithValidation(user: LocalUser) {
         const messages = [""]
         const activeSubscription = this.paymentSubscriptionService.filterByActiveSubscription(user.subscriptions, "GARANTEX")
         if (activeSubscription == null) {
@@ -62,6 +62,10 @@ export class ExchangeRatesService {
         }
 
         return messages;
+    }
+
+    async rates(type: string = "GARANTEX", market: string = "usdtrub") {
+        return await this.exchangeDao.getGarantexRate(market)
     }
 
     private formatDate(date: Date): string {

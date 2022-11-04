@@ -6,80 +6,91 @@ import {ds} from "../data-source";
 import {Service} from "typedi";
 import {NewContext} from "../bot_config/Domain";
 import {Bot} from "grammy";
+import {findCountryByCode} from "./FlagUtilities";
+import {ExchangeRatesService} from "./ExchangeRatesService";
 
 @Service()
 export class KoronaGarantexSpreadService extends SpreadBaseService {
 
-    constructor(botApi: Bot<NewContext>) {
+    constructor(botApi: Bot<NewContext>, public exchangeRatesService: ExchangeRatesService) {
         super(botApi);
     }
 
-    async processBase(baseRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
+    async processReference(baseRate: ExchangeHistory, referenceRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
+        if (baseRate == null) {
+            baseRate = await this.exchangeRatesService.rates()
+        }
+
+        subscription.referenceData = await ds.getRepository(SpreadReferenceData).createQueryBuilder()
+            .where({subscription: subscription})
+            .orderBy({country: "ASC"})
+            .getMany()
+
+        if (referenceRate != null) {
+            subscription.referenceData.forEach(data => {
+                if (data.country == referenceRate.country) {
+                    data.koronaLastNotifiedValue = referenceRate.value
+                }
+            })
+        }
+
+        await this.processReference1(baseRate, subscription)
+
+    }
+
+    async processReference1(baseRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
         if (subscription.garantexLastNotifiedValue == null) {
             subscription.garantexLastNotifiedValue = baseRate.value;
             await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
-        }
-        subscription.referenceData = await ds.getRepository(SpreadReferenceData).createQueryBuilder()
-            .where({subscription: subscription})
-            .getMany()
-
-        const spreads = [];
-        let spreadExceeded = false;
-        for (const ref of subscription.referenceData) {
-            if (ref.koronaLastNotifiedValue == null) continue;
-
-            const spread = this.calculateSpread(baseRate.value, ref.koronaLastNotifiedValue)
-            spreads.push({country: ref.country, spread: spread})
-            if (spread >= subscription.notificationThreshold) {
-                spreadExceeded = true;
-            }
-        }
-
-        if (spreadExceeded) {
-            await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
-            this.notifyUser(subscription.user.userId, baseRate.value, spreads)
-        }
-    }
-
-    async processReference(referenceRates: ExchangeHistory[], subscription: KoronaGarantexSpreadSubscription) {
-        if (subscription.garantexLastNotifiedValue == null) {
             return;
         }
 
-        subscription.referenceData = await ds.getRepository(SpreadReferenceData).createQueryBuilder()
-            .where({subscription: subscription})
-            .getMany()
-
         const spreads = [];
-        let spreadExceeded = false;
-        for (const rate of referenceRates) {
+        let shouldNotify = false;
+        for (const referenceData of subscription.referenceData) {
+            let spreadExceeded = false
+            const currentSpread = this.calculateSpread(subscription.garantexLastNotifiedValue,
+                referenceData.koronaLastNotifiedValue)
 
-            let referenceData = subscription.referenceData.find(r => r.country == rate.country)
+            const spreadDiff = Math.abs(Math.abs(currentSpread) - Math.abs(referenceData.lastNotifiedSpreadValue))
 
-            if (referenceData == null) {
-                return
+            if (true) {
+                if (spreadDiff >= subscription.notificationThreshold) {
+                    referenceData.lastNotifiedSpreadValue = currentSpread
+                    shouldNotify = true;
+                    spreadExceeded = true;
+                }
+            } else {
+                if (currentSpread >= subscription.notificationThreshold) {
+                    if (referenceData.lastNotifiedSpreadValue >= subscription.notificationThreshold) {
+                        referenceData.lastNotifiedSpreadValue = currentSpread
+                        shouldNotify = true;
+                        spreadExceeded = true;
+                    }
+                }
             }
-
-            const spread = this.calculateSpread(subscription.garantexLastNotifiedValue, rate.value)
-            spreads.push({country: referenceData.country, spread: spread})
-            if (spread >= subscription.notificationThreshold) {
-                spreadExceeded = true;
-            }
+            spreads.push({
+                country: referenceData.country,
+                spread: currentSpread,
+                rate: referenceData.koronaLastNotifiedValue,
+                spreadExceeded: spreadExceeded
+            })
         }
 
-        if (spreadExceeded) {
-            await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
+        if (shouldNotify) {
             this.notifyUser(subscription.user.userId, subscription.garantexLastNotifiedValue, spreads)
         }
+        await ds.getRepository(SpreadReferenceData).save(subscription.referenceData)
+        await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
     }
 
     private notifyUser(userId: number, base: number, spreads: any[]) {
         const lines = [`Garantex: ${base}`, ""]
         for (let s of spreads) {
-            lines.push(`  ${s.country} | ${s.spread}`)
+            lines.push(`  ${findCountryByCode(s.country).flag}  ${s.country} | ${s.rate} | ${s.spread.toFixed(2)} % `)
         }
 
-        this.tg.sendMessage(userId, lines.join(","))
+        this.tg.sendMessage(userId, lines.join("\n"))
     }
 
     private calculateSpread(baseVal: number, relativeVal: number) {

@@ -42,6 +42,24 @@ export class ExchangeRatesDao {
             .getMany()
     }
 
+    async getGarantexRate(market: string) {
+
+        const maxIds = await ds.getRepository(ExchangeHistory)
+            .createQueryBuilder("exchRates")
+            .select("max(id) as id")
+            .where({type: "GARANTEX", market: market})
+            .groupBy("market")
+            .getRawMany()
+            .then(result => result.map(ret => ret.id))
+
+
+        return ds.getRepository(ExchangeHistory)
+            .createQueryBuilder()
+            .where({id: In(maxIds)})
+            .orderBy("market")
+            .getOne()
+    }
+
     save(history: ExchangeHistory) {
         return ds.manager.save(history)
     }

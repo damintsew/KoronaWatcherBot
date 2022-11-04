@@ -6,7 +6,7 @@ import {SpreadReferenceData} from "./SpreadReferenceData";
 // @Unique("constraint_kotona-garantex_spread_subscr", ["user", "county", "type"])
 export class KoronaGarantexSpreadSubscription extends BaseSubscription {
 
-    @Column({nullable: false})
+    @Column({nullable: false, type: "float"})
     notificationThreshold: number
 
     @Column({nullable: true, type: "float"})

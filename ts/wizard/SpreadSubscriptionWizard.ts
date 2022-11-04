@@ -1,22 +1,16 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {countries} from "../service/FlagUtilities";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {MyConversation, NewContext} from "../bot_config/Domain";
-import {Keyboard} from "@grammyjs/conversations/out/deps.node";
-import {koronaSubscriptionMenu} from "./KoronaSubscriptionWizard";
 import {PaymentSubscription} from "../entity/PaymentSubscription";
 import moment from "moment/moment";
-import {ds} from "../data-source";
-import {unsubscribeMenu} from "./UnsubscriptionWizard";
-import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
 import {QueryFailedError} from "typeorm";
-import {KoronaGarantexSpreadService} from "../service/KoronaGarantexSpreadService";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {SpreadReferenceData} from "../entity/subscription/SpreadReferenceData";
 import {Container} from "typedi";
 import {SubscriptionService} from "../service/SubscriptionService";
+import {PaymentValidationWizard} from "./PaymentValidationWizard";
 
 /** This is how the dishes look that this bot is managing */
 interface Dish { //todo rename
@@ -25,56 +19,19 @@ interface Dish { //todo rename
     selected: boolean
 }
 
+const paymentValidationWizard = Container.get(PaymentValidationWizard);
 const subscriptionService = Container.get(SubscriptionService);
 
 async function spreadConversation(conversation: MyConversation, ctx: NewContext) {
-
-    if (ctx.user.subscriptions == null || ctx.user.subscriptions.length == 0) {
-        const keyboard = new Keyboard()
-            .text("Да")
-            .text("Отмена").row()
-            .oneTime()
-            .resized();
-        await ctx.reply('Данная функциф платная - стоимость подписки 1 usdt/месяц\n' +
-            'У вас доступна триальная версия - в течении 7 дней.\n' +
-            'Желаете продолжить ?', {reply_markup: keyboard})
-
-
-        const answer = await conversation.waitFor("message:text");
-
-        if (answer.msg.text == "Да") {
-            const trialSubscription = new PaymentSubscription(); // todo move to Subscr service
-            trialSubscription.type ="GARANTEX-SPREAD"
-            trialSubscription.trial = true
-            trialSubscription.startDate = new Date()
-            trialSubscription.expirationDate = moment().add(7, "d").toDate()
-            trialSubscription.user = ctx.user
-
-            await ds.manager.save(trialSubscription)
-            await ctx.reply("Триал оформлен. В случае проблем пишите в /support")
-            await ctx.reply("Оформление подписки Garantex", {reply_markup: spreadSubscriptionMenu})
-            // todo move to subcription
-        } else if (answer.msg.text == "Нет") {
-            return ctx.reply("Отменяю") //todo remove keyboard
+    return paymentValidationWizard.trialValidator(conversation, ctx, {
+        subscriptionId: "SPREAD",
+        price: "2",
+        subscriptionText: "Спреды",
+        onSuccess: null,
+        startNewSubscription: async (ctx: NewContext) => {
+            await ctx.reply("При каком значение Спреда уведомлять?", {reply_markup: spreadSubscriptionMenu})
         }
-    }
-
-    const activeTrial = findPredicate(ctx.user.subscriptions,
-        s => s.trial && s.type == "GARANTEX-SPREAD")
-    if (activeTrial) {
-        await ctx.reply("Оформление подписки Garantex", {reply_markup: spreadSubscriptionMenu})
-        return;
-    }
-
-    const activeGarantexSubscription = findPredicate(ctx.user.subscriptions,
-        s => s.type == "GARANTEX-SPREAD")
-    if (activeGarantexSubscription) {
-        await ctx.reply("Оформление подписки Garantex", {reply_markup: spreadSubscriptionMenu})
-        return;
-    }
-
-
-    return ctx.reply("Ваша подписка кончилась! Оплатите подписку", {reply_markup: {remove_keyboard: true}});
+    })
 }
 
 const spreadSubscriptionMenu = new Menu<NewContext>('spread-subscription-menu')
@@ -82,7 +39,7 @@ spreadSubscriptionMenu.dynamic(() => {
 
     // todo duplicate
     const range = new MenuRange<NewContext>()
-range.addRange(createDishMenu("1%", "1"))
+    range.addRange(createDishMenu("1%", "1"))
     range.addRange(createDishMenu("0.75 %", "0.75").row())
     range.addRange(createDishMenu("0.50 %", "0.50"))
     range.addRange(createDishMenu("0.25 %", "0.25").row())
@@ -103,14 +60,11 @@ function createDishMenu(text: string, payload: string) {
         .text(
             {text: text, payload: payload},
             async ctx => {
-                const sp = new SpreadReferenceData()
-                sp.country = "TUR"
-
                 ctx.session.subscriptionData = new KoronaGarantexSpreadSubscription()
                 ctx.session.subscriptionData.user = ctx.user
-                ctx.session.subscriptionData.notificationThreshold = Number.parseInt(ctx.match)
+                ctx.session.subscriptionData.notificationThreshold = Number.parseFloat(payload)
                 ctx.session.subscriptionData.type = "SPREAD"
-                ctx.session.subscriptionData.referenceData = [sp]
+                ctx.session.subscriptionData.referenceData = staticReferenceDates()
 
                 let message;
                 let success = false;
@@ -137,6 +91,22 @@ function createDishMenu(text: string, payload: string) {
                 return ctx.menu.close()
             }
         )
+}
+
+const staticReferenceDates = () => {
+    const res = []
+    for (const c of countries) {
+        res.push(spreadRef(c.code))
+    }
+
+    return res;
+}
+
+function spreadRef(country: string) {
+    const sp = new SpreadReferenceData()
+    sp.country = country
+
+    return sp;
 }
 
 const scheduledMenu = new Menu<NewContext>('time-subscription')
@@ -207,27 +177,6 @@ function createTimeButtonMenu(text: string, payload: string) {
                 return ctx.menu.update()
             }
         )
-}
-
-function findPredicate(subscriptions: PaymentSubscription[], predicate: (s: PaymentSubscription) => {}) {
-    for (let s of findActiveSubscriptions(subscriptions)) {
-        if (predicate(s)) {
-            return s
-        }
-    }
-    return null
-}
-
-function findActiveSubscriptions(subscriptions: PaymentSubscription[]) {
-    const result = []
-    const now = moment()
-    for (let s of subscriptions) {
-        if (now.isBetween(s.startDate, s.expirationDate)) {
-            result.push(s)
-        }
-    }
-
-    return result;
 }
 
 export {spreadSubscriptionMenu, spreadConversation}

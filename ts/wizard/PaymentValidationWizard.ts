@@ -12,6 +12,7 @@ export interface Config {
     price: string,
 
     onSuccess: any | null
+    startNewSubscription: Function | null
 }
 
 @Service()
@@ -34,7 +35,10 @@ export class PaymentValidationWizard {
         }
 
         if (this.isSubscriptionActive(trial) || activeSubscription) {
-            await ctx.reply("Оформление подписки Garantex", config.onSuccess)
+            await ctx.reply(`Оформление подписки на ${config.subscriptionText}`, config.onSuccess)
+            if (config.startNewSubscription) {
+                await config.startNewSubscription(ctx)
+            }
         } else {
             await this.activateSubscription(conversation, ctx, config)
         }
@@ -46,7 +50,7 @@ export class PaymentValidationWizard {
             .text("Отмена").row()
             .oneTime()
             .resized();
-        await ctx.reply(`Данная функциф платная - стоимость подписки ${config.price} usdt/месяц\n` +
+        await ctx.reply(`Данная функция платная - стоимость подписки ${config.price} usdt/месяц\n` +
             'У вас доступна триальная версия - в течении 7 дней.\n' +
             'Желаете продолжить ?', {reply_markup: keyboard})
 
@@ -55,7 +59,10 @@ export class PaymentValidationWizard {
         if (answer.msg.text == "Да") {
             await this.paymentService.createTrialSubscription(config, ctx.user)
             await ctx.reply("Триал оформлен. В случае проблем пишите в /support")
-            await ctx.reply("Оформление подписки Garantex", config.onSuccess)
+            await ctx.reply(`Оформление подписки ${config.subscriptionText}`, config.onSuccess)
+            if (config.startNewSubscription) {
+                await config.startNewSubscription(ctx)
+            }
         } else if (answer.msg.text == "Нет") {
             return ctx.reply("Отменяю", {reply_markup: {remove_keyboard: true}})
         }

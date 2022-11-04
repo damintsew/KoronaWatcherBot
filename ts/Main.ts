@@ -89,8 +89,8 @@ async function movie(conversation: MyConversation, ctx: NewContext) {
         return garantexCreateSubscription(conversation, ctx);
     }
     if (titleCtx.msg.text == "В разработке: Получение Спредов ЗК + Garantex") {
-        return ctx.reply("В разработке! Скоро будет!", {reply_markup: {remove_keyboard: true}});
-        // return spreadConversation(conversation, ctx)
+        // return ctx.reply("В разработке! Скоро будет!", {reply_markup: {remove_keyboard: true}});
+        return spreadConversation(conversation, ctx)
     }
     return ctx.reply("", {reply_markup: {remove_keyboard: true}});
 }

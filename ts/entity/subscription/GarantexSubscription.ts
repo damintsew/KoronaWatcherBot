@@ -5,7 +5,7 @@ import {BaseSubscription} from "./BaseSubscription";
 @Unique("constraint_garantex_subscr", ["user", "market", "type"])
 export class GarantexSubscription extends BaseSubscription {
 
-    @Column({nullable: false})
+    @Column({nullable: false, type: "float"})
     notificationThreshold: number
 
     @Column({nullable: false})
