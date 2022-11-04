@@ -24,6 +24,23 @@ export class ExchangeRatesDao {
             .getMany()
     }
 
+    async getKoronaRate(country: string) {
+
+        const maxIds = await ds.getRepository(ExchangeHistory)
+            .createQueryBuilder("exchRates")
+            .select("max(id) as id")
+            .where({type: "KORONA", country: country})
+            .groupBy("country")
+            .getRawMany()
+            .then(result => result.map(ret => ret.id))
+
+        return ds.getRepository(ExchangeHistory)
+            .createQueryBuilder()
+            .where({id: In(maxIds)})
+            .orderBy("country")
+            .getOne()
+    }
+
     async getAllGarantexRates() {
 
         const maxIds = await ds.getRepository(ExchangeHistory)
