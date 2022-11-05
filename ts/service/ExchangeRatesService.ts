@@ -19,6 +19,10 @@ export class ExchangeRatesService {
         this.paymentSubscriptionService = Container.get(PaymentSubscriptionService)
     }
 
+    getAllKoronaRates() {
+        return this.exchangeDao.getAllKoronaRates()
+    }
+
     async getAllRates(ctx) {
         this.statisticService.callRate(ctx.user)
         const rates = await this.exchangeDao.getAllKoronaRates()

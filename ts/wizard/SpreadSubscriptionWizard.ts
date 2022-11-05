@@ -32,6 +32,16 @@ async function spreadConversation(conversation: MyConversation, ctx: NewContext)
     })
 }
 
+async function spreadOnlySubscribe(conversation: MyConversation, ctx: NewContext) {
+    return paymentValidationWizard.trialValidator(conversation, ctx, {
+        subscriptionId: "SPREAD",
+        price: "2",
+        subscriptionText: "Спреды",
+        onSuccess: null,
+        startNewSubscription: null
+    })
+}
+
 const spreadSubscriptionMenu = new Menu<NewContext>('spread-subscription-menu')
 spreadSubscriptionMenu.dynamic(() => {
 
@@ -148,7 +158,9 @@ function createDishMenu(text: string, payload: string, changeType: string) {
 const staticReferenceDates = () => {
     const res = []
     for (const c of countries) {
-        res.push(spreadRef(c.code))
+        if (c.isActive) {
+            res.push(spreadRef(c.code))
+        }
     }
 
     return res;
@@ -164,5 +176,5 @@ function spreadRef(country: string) {
 spreadSubscriptionMenu.register(spreadAbsoluteSubscriptionMenu)
 spreadSubscriptionMenu.register(spreadChangeSubscriptionMenu)
 
-export {spreadSubscriptionMenu, spreadConversation}
+export {spreadSubscriptionMenu, spreadConversation, spreadOnlySubscribe}
 

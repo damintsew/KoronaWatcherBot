@@ -7,6 +7,14 @@ import {Service} from "typedi";
 export class StatisticService {
 
     callRate(user: LocalUser) {
+        this.create(user, "rate")
+    }
+
+    callSpread(user) {
+        this.create(user, "spread")
+    }
+
+    private create(user: LocalUser, action: string) {
         const stat = new Statistic()
         stat.user = user
         stat.date = new Date()
