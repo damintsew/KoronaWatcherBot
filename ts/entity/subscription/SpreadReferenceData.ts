@@ -1,6 +1,5 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique} from "typeorm";
 import {KoronaGarantexSpreadSubscription} from "./KoronaGarantexSpreadSubscription";
-import {Unique} from "typeorm";
 
 @Entity("spread_reference_data")
 @Unique("usnique_suncription_data", ["country", "subscription"])
@@ -18,6 +17,9 @@ export class SpreadReferenceData {
     @Column({nullable: true, type: "float"})
     lastNotifiedSpreadValue: number
 
-    @ManyToOne(type => KoronaGarantexSpreadSubscription, {eager: true})
+    @ManyToOne(type => KoronaGarantexSpreadSubscription,
+        {
+            eager: true, onDelete: "CASCADE", orphanedRowAction: 'delete'
+        })
     subscription: KoronaGarantexSpreadSubscription
 }

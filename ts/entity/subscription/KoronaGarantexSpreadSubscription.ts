@@ -12,6 +12,9 @@ export class KoronaGarantexSpreadSubscription extends BaseSubscription {
     @Column({nullable: true, type: "float"})
     garantexLastNotifiedValue: number
 
+    @Column({nullable: false})
+    changeType: string
+
     @OneToMany(() => SpreadReferenceData, referenceData => referenceData.subscription,
         {cascade: ["insert", "update", "remove"]/*, eager: true*/})
     referenceData: SpreadReferenceData[]

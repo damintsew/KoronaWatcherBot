@@ -26,12 +26,21 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
             .orderBy({country: "ASC"})
             .getMany()
 
+        for (const data of subscription.referenceData) {
+            if (data.koronaLastNotifiedValue == null) {
+                data.koronaLastNotifiedValue = (await this.exchangeRatesService.getRate(data.country, "KORONA"))?.value
+            }
+        }
+
         if (referenceRate != null) {
-            subscription.referenceData.forEach(data => {
+            for (const data of subscription.referenceData) {
                 if (data.country == referenceRate.country) {
                     data.koronaLastNotifiedValue = referenceRate.value
                 }
-            })
+                if (data.koronaLastNotifiedValue == null) {
+                    data.koronaLastNotifiedValue = (await this.exchangeRatesService.getRate(data.country, "KORONA"))?.value
+                }
+            }
         }
 
         await this.processReference1(baseRate, subscription)
@@ -54,7 +63,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
 
             const spreadDiff = Math.abs(Math.abs(currentSpread) - Math.abs(referenceData.lastNotifiedSpreadValue))
 
-            if (true) {
+            if (subscription.changeType == "SPREAD_CHANGE") {
                 if (spreadDiff >= subscription.notificationThreshold) {
                     referenceData.lastNotifiedSpreadValue = currentSpread
                     shouldNotify = true;
@@ -62,11 +71,15 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
                 }
             } else {
                 if (currentSpread >= subscription.notificationThreshold) {
-                    if (referenceData.lastNotifiedSpreadValue >= subscription.notificationThreshold) {
+                    if (referenceData.lastNotifiedSpreadValue <= subscription.notificationThreshold) { //notify when exceeded
                         referenceData.lastNotifiedSpreadValue = currentSpread
                         shouldNotify = true;
                         spreadExceeded = true;
                     }
+                } else if (referenceData.lastNotifiedSpreadValue >= subscription.notificationThreshold) { // nofity when dropped below
+                    referenceData.lastNotifiedSpreadValue = currentSpread
+                    shouldNotify = true;
+                    spreadExceeded = true;
                 }
             }
             spreads.push({
@@ -78,22 +91,52 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         }
 
         if (shouldNotify) {
-            this.notifyUser(subscription.user.userId, subscription.garantexLastNotifiedValue, spreads)
+            this.notifyUser(subscription, subscription.garantexLastNotifiedValue, spreads)
         }
         await ds.getRepository(SpreadReferenceData).save(subscription.referenceData)
         await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
     }
 
-    private notifyUser(userId: number, base: number, spreads: any[]) {
-        const lines = [`Garantex: ${base}`, ""]
+    private notifyUser(subscription: KoronaGarantexSpreadSubscription, base: number, spreads: any[]) {
+        const lines = [this.formatTextMessage(subscription), `Garantex: ${base}`, ""]
         for (let s of spreads) {
-            lines.push(`  ${findCountryByCode(s.country).flag}  ${s.country} | ${s.rate} | ${s.spread.toFixed(2)} % `)
+            let line = `  ${findCountryByCode(s.country).flag}  ${s.country} | ${s.rate} | ${s.spread.toFixed(2)} % `
+            if (s.spreadExceeded) {
+                line = "<b>" + line + "</b>"
+            }
+            lines.push(line)
         }
 
-        this.tg.sendMessage(userId, lines.join("\n"))
+        this.tg.sendMessage(subscription.user.userId, lines.join("\n"), {
+            parse_mode: 'HTML',
+        })
     }
 
     private calculateSpread(baseVal: number, relativeVal: number) {
         return (baseVal - relativeVal) / baseVal * 100;
+    }
+
+    formatTextMessage(subscription: KoronaGarantexSpreadSubscription) {
+        let message = `Spread: `;
+        if (subscription.changeType == "SPREAD_CHANGE") {
+            message += `подписка на изменение значение на `
+        } else {
+            message += `подписка на достижение значения в `
+        }
+        message += `${subscription.notificationThreshold} %`
+
+        return message
+    }
+
+    formatButtonText(subscription: KoronaGarantexSpreadSubscription) {
+        let message = `Spread: `;
+        if (subscription.changeType == "SPREAD_CHANGE") {
+            message += `изменение значения`
+        } else {
+            message += `достижение значения `
+        }
+        message += `${subscription.notificationThreshold}`
+
+        return message
     }
 }
