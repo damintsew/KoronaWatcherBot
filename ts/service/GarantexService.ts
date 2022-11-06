@@ -3,12 +3,11 @@ import {GarantexDao} from "../dao/GarantexDao";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {SubscriptionService} from "./SubscriptionService";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
-import {Api} from "@grammyjs/menu/out/deps.node";
 import {EventProcessor} from "../events/EventProcessor";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
 import {Container, Service} from "typedi";
-import {Bot} from "grammy";
-import {NewContext} from "../bot_config/Domain";
+import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
+import {LocalUser} from "../entity/LocalUser";
 
 @Service()
 export class GarantexService {
@@ -16,7 +15,6 @@ export class GarantexService {
     private exchangeRatesDao: ExchangeRatesDao;
     private garantexDao: GarantexDao;
     private subscriptionService: SubscriptionService
-    private tgApi: Api;
     private eventProcessor: EventProcessor
     private paymentValidatorService: PaymentSubscriptionService
 
@@ -24,20 +22,20 @@ export class GarantexService {
                 garantexDao: GarantexDao,
                 subscriptionService: SubscriptionService,
                 eventProcessor: EventProcessor,
-                botApi: Bot<NewContext>) {
+                public messageSender: GlobalMessageAnnouncerService,
+                paymentSubscriptionService: PaymentSubscriptionService) {
         this.exchangeRatesDao = exchangeRatesDao;
         this.garantexDao = garantexDao;
         this.subscriptionService = subscriptionService;
         this.eventProcessor = eventProcessor;
-        this.tgApi = botApi.api;
-        this.paymentValidatorService = Container.get(PaymentSubscriptionService)
+        this.paymentValidatorService = paymentSubscriptionService;
     }
 
     async process() {
         const exchangeRate = await this.getAndSaveRates()
         let subscriptions = await this.subscriptionService.getSubscriptionsByType<GarantexSubscription>("GARANTEX");
 
-        let activeSubscriptions = subscriptions.filter( subscription => {
+        let activeSubscriptions = subscriptions.filter(subscription => {
             const activeSubscription = this.paymentValidatorService.filterByActiveSubscription(subscription.user?.subscriptions, "GARANTEX")
             return activeSubscription != null
         })
@@ -78,7 +76,7 @@ export class GarantexService {
 
             try {
                 if (difference >= subs.notificationThreshold) {
-                    await this.notifyUser(subs.user.userId, subs.market, subs.lastNotifiedValue, rate.value);
+                    await this.notifyUser(subs.user, subs.market, subs.lastNotifiedValue, rate.value);
                     subs.lastNotifiedValue = rate.value;
 
                     await this.subscriptionService.update(subs)
@@ -89,12 +87,12 @@ export class GarantexService {
         }
     }
 
-    private async notifyUser(userId: number, market: string, oldValue: number, newValue: number) {
+    private async notifyUser(user: LocalUser, market: string, oldValue: number, newValue: number) {
         const sign = newValue > oldValue ? "⬆️" : "⬇️";
         const text = `Garantex: ${sign} ${market} 1$ = ${newValue}`
-        console.log("Sending message to user " + userId)
+        console.log("Sending message to user " + user.userId)
         try {
-            await this.tgApi.sendMessage(userId, text)
+            await this.messageSender.sendMessage(user, text)
         } catch (e) {
             console.log(e)
         }
