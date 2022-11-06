@@ -168,7 +168,7 @@ export class SubscriptionService {
             .createQueryBuilder("s")
             .innerJoinAndSelect("s.user", "user")
             .innerJoinAndSelect("user.subscriptions", "subscriptions")
-            .where("s.type = :type", {type: type})
+            .where("s.type = :type and user.deletionMark = false", {type: type})
             .getMany()
     }
 
