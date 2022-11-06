@@ -12,7 +12,7 @@ export class BaseSubscriptionMenu {
         const keyboard = new Keyboard()
             .text("Подписка на курс: Золотая Корона").row()
             .text("Подписка на курс: Garantex").row()
-            .text("В разработке: Получение Спредов ЗК + Garantex").row()
+            .text("Получение Спредов ЗК + Garantex").row()
             .text("Отмена")
             .oneTime()
             .resized();
@@ -25,7 +25,7 @@ export class BaseSubscriptionMenu {
         if (titleCtx.msg.text == "Подписка на курс: Garantex") {
             return garantexCreateSubscription(conversation, ctx);
         }
-        if (titleCtx.msg.text == "В разработке: Получение Спредов ЗК + Garantex") {
+        if (titleCtx.msg.text == "Получение Спредов ЗК + Garantex") {
             // return ctx.reply("В разработке! Скоро будет!", {reply_markup: {remove_keyboard: true}});
             return spreadConversation(conversation, ctx)
         }
