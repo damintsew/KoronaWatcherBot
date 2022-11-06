@@ -29,6 +29,13 @@ export class UserDao {
         return ds.manager.save(user)
     }
 
+    findUsersNotMarkedForDeletion() {
+        return ds.getRepository(LocalUser)
+            .createQueryBuilder("allUsers")
+            .where({'deletionMark': false})
+            .getMany()
+    }
+
     findUsersMarkedForDeletion() {
         return ds.getRepository(LocalUser)
             .createQueryBuilder("getUserById")
