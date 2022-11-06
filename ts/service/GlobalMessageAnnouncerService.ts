@@ -44,10 +44,9 @@ export class GlobalMessageAnnouncerService {
                         continue;
                     }
 
-                    const userId = user.userId;
-                    console.log(`Sending message to user ${userId}`)
+                    console.log(`Sending message to user ${user.userId}`)
                     try {
-                        await this.tg.sendMessage(userId, messageText)
+                        await this.sendMessage(user, messageText)
                     } catch (e) {
                         console.log(e)
                     }

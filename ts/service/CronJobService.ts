@@ -37,7 +37,7 @@ export class CronJobService {
         this.scheduledNotificationService = scheduledNotificationService;
 
         this.garantexService = garantexService;
-        this.everySecondJob = new CronJob('*/1 * * * * *', async () => {
+        this.everySecondJob = new CronJob('*/30 * * * * *', async () => {
             try {
                 await this.secondAction();
             } catch (e) {
