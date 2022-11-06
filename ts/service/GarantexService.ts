@@ -66,9 +66,9 @@ export class GarantexService {
 
     private async processNotifications(subscriptions: GarantexSubscription[], rate: ExchangeHistory) {
         for (const subs of subscriptions) {
-            if (subs.notificationThreshold == null) {
-                subs.notificationThreshold = rate.value
-                this.subscriptionService.update(subs)
+            if (subs.lastNotifiedValue == null) {
+                subs.lastNotifiedValue = rate.value
+                await this.subscriptionService.update(subs)
                 continue;
             }
 

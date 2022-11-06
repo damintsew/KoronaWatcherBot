@@ -10,9 +10,12 @@ import {Container} from "typedi";
 import {PaymentSubscriptionService} from "../service/PaymentSubscriptionService";
 import moment from "moment";
 import {SubscriptionService} from "../service/SubscriptionService";
+import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
+import {KoronaGarantexSpreadService} from "../service/KoronaGarantexSpreadService";
 
 const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
 const subscriptionService = Container.get(SubscriptionService);
+const koronaGarantexSpreadService = Container.get(KoronaGarantexSpreadService)
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {
@@ -99,11 +102,17 @@ function formatTextMessage(s: BaseSubscription) {
     if (s instanceof GarantexSubscription) {
         return `Garantex: ${s.market} уведомлять при изменении на ${s.notificationThreshold}`
     }
+    if (s instanceof KoronaGarantexSpreadSubscription) {
+        return koronaGarantexSpreadService.formatTextMessage(s)
+    }
 }
 
 function formatButtonText(s: BaseSubscription) {
     if (s instanceof GarantexSubscription) {
         return `Garantex: ${s.market} изменение на ${s.notificationThreshold}`
+    }
+    if (s instanceof KoronaGarantexSpreadSubscription) {
+        return koronaGarantexSpreadService.formatButtonText(s)
     }
 }
 
@@ -119,7 +128,7 @@ async function formatUnsubscribeText(userId: number) {
         messages.push(formatText(subscription))
     }
 
-    const baseSubscriptions = await subscriptionService.getBaseSubscriptions(userId) //as SubscriptionThresholdData[]
+    const baseSubscriptions = await subscriptionService.getBaseSubscriptions(userId)
     for (const subscription of baseSubscriptions) {
         messages.push(formatTextMessage(subscription))
     }

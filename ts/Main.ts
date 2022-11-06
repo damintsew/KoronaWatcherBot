@@ -27,6 +27,8 @@ import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscri
 import {UserService} from "./service/UserService";
 import {ExchangeRatesService} from "./service/ExchangeRatesService";
 import {CronJobService} from "./service/CronJobService";
+import {KoronaGarantexSpreadService} from "./service/KoronaGarantexSpreadService";
+import {BaseSubscriptionMenu} from "./wizard/BaseSubscriptionMenu";
 
 (async function () {
     await ds.initialize(); //todo get rid of this
@@ -34,9 +36,12 @@ import {CronJobService} from "./service/CronJobService";
 
 const userService = Container.get(UserService);
 const exchangeRateService = Container.get(ExchangeRatesService);
+const spreadService = Container.get(KoronaGarantexSpreadService);
+const baseSubscriptionMenu = Container.get(BaseSubscriptionMenu);
 
 bot.api.setMyCommands([
     {command: 'rates', description: 'Показать текущий курс'},
+    {command: 'spread', description: 'Показать текущий спред'},
     {command: 'subscribe', description: 'Подписаться на уведомления'},
     {command: 'list', description: 'Список подписок'},
     {command: 'unsubscribe', description: 'Отписаться от уведомлений'},
@@ -71,42 +76,22 @@ bot.use(async (ctx, next) => {
     await next();
 });
 
-async function movie(conversation: MyConversation, ctx: NewContext) {
-    const keyboard = new Keyboard()
-        .text("Подписка на курс: Золотая Корона").row()
-        .text("Подписка на курс: Garantex").row()
-        .text("В разработке: Получение Спредов ЗК + Garantex").row()
-        .text("Отмена")
-        .oneTime()
-        .resized();
-    await ctx.reply('Выберите подписку', {reply_markup: keyboard})
-
-    const titleCtx = await conversation.waitFor("message:text");
-    if (titleCtx.msg.text == "Подписка на курс: Золотая Корона") {
-        return ctx.reply("Создание новой подписки:", {reply_markup: koronaSubscriptionMenu})
-    }
-    if (titleCtx.msg.text == "Подписка на курс: Garantex") {
-        return garantexCreateSubscription(conversation, ctx);
-    }
-    if (titleCtx.msg.text == "В разработке: Получение Спредов ЗК + Garantex") {
-        return ctx.reply("В разработке! Скоро будет!", {reply_markup: {remove_keyboard: true}});
-        // return spreadConversation(conversation, ctx)
-    }
-    return ctx.reply("", {reply_markup: {remove_keyboard: true}});
-}
-
 bot.use(koronaSubscriptionMenu)
 bot.use(garantexSubscriptionMenu)
 bot.use(spreadSubscriptionMenu)
 bot.use(unsubscribeMenu)
 
 bot.use(conversations());
-bot.use(createConversation(movie, "subscription-main"));
-bot.use(createConversation(garantexOnlySubscription, "garantex-only-trial-subscription"));
+bot.use(createConversation(baseSubscriptionMenu.createSubscriptionMenu, "subscription-main"));
+bot.use(createConversation(baseSubscriptionMenu.createOnlySubscribeMenu, "base-only-subscription"));
 bot.use(createConversation(spreadConversation, "spread-subscription"));
 
 bot.command('rates', async (ctx) => {
     await exchangeRateService.getAllRates(ctx)
+})
+
+bot.command('spread', async (ctx) => {
+    await spreadService.getSpread(ctx)
 })
 
 bot.command('subscribe', async ctx => {
@@ -114,7 +99,7 @@ bot.command('subscribe', async ctx => {
 })
 
 bot.command('payments', async ctx => {
-    await ctx.conversation.enter("garantex-only-trial-subscription");
+    await ctx.conversation.enter("base-only-subscription");
 })
 
 bot.command('unsubscribe',
@@ -141,6 +126,7 @@ bot.command(['help', 'start'], async ctx => {
     const text = 'Привет!\n' +
         'Я показываю курсы валют в Золотой Короне.\n' +
         '/rates курсы валют по всем странам.\n' +
+        '/spread спред по бирже Гарантекс и Золотой Короне.\n' +
         '/subscribe чтобы подписаться на уведомления. \n' +
         '/unsubscribe - отписаться. \n' +
         '/list показывает активные подписки \n' +

@@ -13,8 +13,9 @@ async function garantexCreateSubscription(conversation: MyConversation, ctx: New
     return paymentValidationWizard.trialValidator(conversation, ctx, {
         subscriptionId: "GARANTEX",
         price: "1",
-        subscriptionText: "",
-        onSuccess: {reply_markup: garantexSubscriptionMenu, remove_keyboard: true}
+        subscriptionText: "Гарантекс",
+        onSuccess: {reply_markup: garantexSubscriptionMenu, remove_keyboard: true},
+        startNewSubscription: null
     })
 }
 
@@ -23,7 +24,8 @@ async function garantexOnlySubscription(conversation: MyConversation, ctx: NewCo
         subscriptionId: "GARANTEX",
         price: "1",
         subscriptionText: "",
-        onSuccess: null
+        onSuccess: null,
+        startNewSubscription: null
     })
 }
 

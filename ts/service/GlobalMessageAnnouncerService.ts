@@ -31,7 +31,7 @@ export class GlobalMessageAnnouncerService {
             return;
         }
 
-        const users = await ds.manager.find(LocalUser);
+        const users = await this.userDao.findUsersNotMarkedForDeletion();
 
         for (let a of announcements) {
             if (a.timeToSent < new Date()) {
@@ -71,7 +71,7 @@ export class GlobalMessageAnnouncerService {
     }
 
     async persistMessage() {
-        const messageId = 25;
+        const messageId = 28;
         let existingMgs
         try {
             existingMgs = await ds.manager.findOne(Announcements, {where: {messageId: messageId}});
@@ -87,11 +87,10 @@ export class GlobalMessageAnnouncerService {
         announsment.messageId = messageId;
         announsment.isSent = false;
         announsment.timeToSent = new Date('9 Oct 2022 09:59:00 GMT+0300');
-        announsment.text = "Друзья! \n" +
-            "Давно не было обновлений!\n" +
-            "1) Бот был переработан для быстрого введения новых фич! Возможны баги, в случае появления багов - пишите в /support\n" +
-            "2) Добавлена возможность подписки на изменения курса Garantex! /subscribe\n" +
-            "3) В процессе работа по получению данных по другим валютам и подписка на Спред\n" +
+        announsment.text = "Друзья! \n\n" +
+            "Добавлен рассчет спредов по Гарантексу и Золотой Короне! Для подписки /subscribe\n" +
+            "Также можно получить актуальные спреды через команду /spread \n" +
+            "Фича работает в тестовом режиме поэтому могут быть проблемы с рассчетами. В случае проблем пишите в /support\n" +
             "Всем спасибо!🕊🕊🕊\n\n" +
             "По проблемам, вопросам и предложениям по работе бота - пишите в группу https://t.me/KoronaWatcherSupportBot ";
 

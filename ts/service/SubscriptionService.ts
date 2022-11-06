@@ -193,9 +193,9 @@ export class SubscriptionService {
 
             // todo move to service
             if (exchangeRate.type == "KORONA") {
-                this.spreadService.processReference([exchangeRate], subscription)
+                this.spreadService.processReference(null, exchangeRate, subscription)
             } else if (exchangeRate.type == "GARANTEX") {
-                this.spreadService.processBase(exchangeRate, subscription)
+                this.spreadService.processReference(exchangeRate, null, subscription)
             }
         }
     }
