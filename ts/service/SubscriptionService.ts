@@ -172,14 +172,6 @@ export class SubscriptionService {
             .getMany()
     }
 
-    // async getAllNewSubscriptions(): Promise<BaseSubscription[]> {
-    //     return ds.getRepository(BaseSubscription)
-    //         .createQueryBuilder("subcr")
-    //         .innerJoinAndSelect("subcr.user", "user")
-    //         .where("type = :type", {type: type})
-    // .getMany()
-    // }
-
     update(subs: BaseSubscription) {
         return ds.getRepository(BaseSubscription).save(subs)
     }
@@ -190,12 +182,11 @@ export class SubscriptionService {
     async processSubs(exchangeRate: ExchangeHistory) {
         let baseSubscriptions = await this.getSubscriptionsByType<KoronaGarantexSpreadSubscription>("SPREAD");
         for (const subscription of baseSubscriptions) {
-
             // todo move to service
             if (exchangeRate.type == "KORONA") {
-                this.spreadService.processReference(null, exchangeRate, subscription)
+                await this.spreadService.processReference(null, exchangeRate, subscription)
             } else if (exchangeRate.type == "GARANTEX") {
-                this.spreadService.processReference(exchangeRate, null, subscription)
+                await this.spreadService.processReference(exchangeRate, null, subscription)
             }
         }
     }

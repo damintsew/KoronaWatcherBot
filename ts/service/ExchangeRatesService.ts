@@ -23,6 +23,10 @@ export class ExchangeRatesService {
         return this.exchangeDao.getAllKoronaRates()
     }
 
+    getRate(countryCode: string, korona: string) {
+        return this.exchangeDao.getKoronaRate(countryCode);
+    }
+
     async getAllRates(ctx) {
         this.statisticService.callRate(ctx.user)
         const rates = await this.exchangeDao.getAllKoronaRates()
@@ -74,9 +78,5 @@ export class ExchangeRatesService {
 
     private formatDate(date: Date): string {
         return moment(date).tz("Turkey").format("HH:mm:ss  DD.MM")
-    }
-
-    getRate(countryCode: string, korona: string) {
-        return this.exchangeDao.getKoronaRate(countryCode);
     }
 }
