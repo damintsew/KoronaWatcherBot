@@ -18,7 +18,7 @@ export class StatisticService {
         const stat = new Statistic()
         stat.user = user
         stat.date = new Date()
-        stat.action = "rate"
+        stat.action = action
 
         ds.getRepository(Statistic)
             .save(stat)
