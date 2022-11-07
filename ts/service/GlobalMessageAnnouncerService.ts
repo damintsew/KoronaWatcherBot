@@ -8,6 +8,7 @@ import {Service} from "typedi";
 import {Bot} from "grammy";
 import {NewContext} from "../bot_config/Domain";
 import {UserDao} from "../dao/UserDao";
+import {Other} from "grammy/out/core/api";
 
 @Service()
 export class GlobalMessageAnnouncerService {
@@ -104,8 +105,8 @@ export class GlobalMessageAnnouncerService {
         return sentMessages.some(m => m.user.userId == userId)
     }
 
-    async sendMessage(user: LocalUser, message: string) {
-        return this.tg.sendMessage(user.userId, message)
+    async sendMessage(user: LocalUser, message: string, other?: Other<any, "sendMessage", "chat_id" | "text">) {
+        return this.tg.sendMessage(user.userId, message, other)
             .catch(reason => {
                 if (reason.error_code == 403) {
                     user.deletionMark = true

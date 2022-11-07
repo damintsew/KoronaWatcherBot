@@ -10,15 +10,17 @@ import {findCountryByCode} from "./FlagUtilities";
 import {ExchangeRatesService} from "./ExchangeRatesService";
 import {StatisticService} from "./StatisticService";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
+import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
+import {LocalUser} from "../entity/LocalUser";
 
 @Service()
 export class KoronaGarantexSpreadService extends SpreadBaseService {
 
-    constructor(botApi: Bot<NewContext>,
+    constructor(messageSender: GlobalMessageAnnouncerService,
                 public exchangeRatesService: ExchangeRatesService,
                 public statisticService: StatisticService,
                 public paymentSubscriptionService: PaymentSubscriptionService) {
-        super(botApi);
+        super(messageSender);
     }
 
     async getSpread(ctx) {
@@ -115,13 +117,13 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         }
 
         if (shouldNotify) {
-            this.notifyUser(subscription.user.userId, subscription, subscription.garantexLastNotifiedValue, spreads)
+            this.notifyUser(subscription.user, subscription, subscription.garantexLastNotifiedValue, spreads)
         }
         await ds.getRepository(SpreadReferenceData).save(subscription.referenceData)
         await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
     }
 
-    private notifyUser(userId: number, subscription: KoronaGarantexSpreadSubscription, base: number, spreads: any[]) {
+    private async notifyUser(user: LocalUser, subscription: KoronaGarantexSpreadSubscription, base: number, spreads: any[]) {
         const lines = []
         if (subscription) {
             lines.push(this.formatTextMessage(subscription))
@@ -137,7 +139,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
             lines.push(line)
         }
 
-        this.tg.sendMessage(userId, lines.join("\n"), {
+        await this.messageSender.sendMessage(user, lines.join("\n"), {
             parse_mode: 'HTML',
         })
     }

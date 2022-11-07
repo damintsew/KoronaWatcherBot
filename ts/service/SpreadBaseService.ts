@@ -2,13 +2,14 @@ import {Api} from "@grammyjs/menu/out/deps.node";
 import {Bot} from "grammy";
 import {NewContext} from "../bot_config/Domain";
 import {Service} from "typedi";
+import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 
 @Service()
 export class SpreadBaseService {
 
-    protected tg: Api
+    protected messageSender: GlobalMessageAnnouncerService
 
-    constructor(botApi: Bot<NewContext>) {
-        this.tg = botApi.api;
+    constructor(messageSender: GlobalMessageAnnouncerService) {
+        this.messageSender = messageSender;
     }
 }
