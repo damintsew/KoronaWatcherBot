@@ -117,7 +117,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         }
 
         if (shouldNotify) {
-            this.notifyUser(subscription.user, subscription, subscription.garantexLastNotifiedValue, spreads)
+            await this.notifyUser(subscription.user, subscription, subscription.garantexLastNotifiedValue, spreads)
         }
         await ds.getRepository(SpreadReferenceData).save(subscription.referenceData)
         await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
