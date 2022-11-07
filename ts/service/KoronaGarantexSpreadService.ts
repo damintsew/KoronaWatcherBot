@@ -46,7 +46,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
             })
         }
 
-        this.notifyUser(ctx.user.userId, null, baseRate.value, spreads)
+        await this.notifyUser(ctx.user, null, baseRate.value, spreads)
     }
 
     async processReference(baseRate: ExchangeHistory, referenceRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
