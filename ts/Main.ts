@@ -91,7 +91,7 @@ bot.command('rates', async (ctx) => {
 })
 
 bot.command('spread', async (ctx) => {
-    // await spreadService.getSpread(ctx)
+    await spreadService.getSpread(ctx)
 })
 
 bot.command('subscribe', async ctx => {
