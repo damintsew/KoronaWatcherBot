@@ -44,8 +44,8 @@ export class SubscriptionService {
             .getMany();
     }
 
-    getAllThresholdSubscriptionsWithActiveUser(countryCode: string): Promise<Array<SubscriptionThresholdData>> {
-        return ds.manager.getRepository(SubscriptionThresholdData)
+    getAllThresholdSubscriptionsWithActiveUser(entityManager, countryCode: string): Promise<Array<SubscriptionThresholdData>> {
+        return entityManager.getRepository(SubscriptionThresholdData)
             .createQueryBuilder("findSubscriptions")
             .innerJoinAndSelect("findSubscriptions.user", "user")
             .where("user.deletionMark = false " +

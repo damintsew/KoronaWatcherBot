@@ -27,7 +27,7 @@ export class ExchangeRatesDao {
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("country")
-            .cache(20000)
+            .cache(6000000)
             .getMany()
     }
 
@@ -46,7 +46,7 @@ export class ExchangeRatesDao {
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("country")
-            .cache(20000)
+            .cache(6000000)
             .getOne()
     }
 
@@ -64,6 +64,7 @@ export class ExchangeRatesDao {
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("market")
+            .cache(6000000)
             .getMany()
     }
 
@@ -81,6 +82,7 @@ export class ExchangeRatesDao {
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("market")
+            .cache(6000000)
             .getMany()
     }
 

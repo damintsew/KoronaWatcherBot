@@ -11,6 +11,7 @@ import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {LocalUser} from "../entity/LocalUser";
 import {EntityManager} from "typeorm";
 import {ExchangeRatesService} from "./ExchangeRatesService";
+import e from "express";
 
 @Service()
 export class ThresholdNotificationService {
@@ -53,12 +54,12 @@ export class ThresholdNotificationService {
         }
 
 
-        const subscriptions = await this.getSubscriptions(countryCode);
+        const subscriptions = await this.getSubscriptions(entityManager, countryCode);
         for (let subscription of subscriptions) {
 
             if (subscription.lastNotifiedValue == null) {
                 subscription.lastNotifiedValue = newValue;
-                await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
+                await entityManager.save(subscription)
             }
 
             let difference = this.calculateDifference(subscription.lastNotifiedValue, newValue);
@@ -69,7 +70,7 @@ export class ThresholdNotificationService {
                 if (difference >= subscription.notificationThreshold) {
                     await this.notifyUser(countryCode, subscription.user, subscription.lastNotifiedValue, newValue);
                     subscription.lastNotifiedValue = newValue;
-                    await entityManager.getRepository(SubscriptionThresholdData).save(subscription)
+                    await entityManager.save(subscription)
                 }
             } catch (e) {
                 console.error(e)
@@ -91,8 +92,8 @@ export class ThresholdNotificationService {
         }
     }
 
-    private getSubscriptions(countryCode: string) {
-        return this.subscriptionService.getAllThresholdSubscriptionsWithActiveUser(countryCode)
+    private getSubscriptions(entityManager, countryCode: string) {
+        return this.subscriptionService.getAllThresholdSubscriptionsWithActiveUser(entityManager, countryCode)
     }
 
     private calculateDifference(currentValue: number, newValue: number): number {
