@@ -9,6 +9,8 @@ import {Service} from "typedi";
 import {SubscriptionService} from "./SubscriptionService";
 import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {LocalUser} from "../entity/LocalUser";
+import {EntityManager} from "typeorm";
+import {ExchangeRatesService} from "./ExchangeRatesService";
 
 @Service()
 export class ThresholdNotificationService {
@@ -24,12 +26,14 @@ export class ThresholdNotificationService {
     async process() {
         for (const country of countries) {
             if (country.isActive) {
-                this.processCountry(country.code)
+                await ds.transaction(async entityManager => {
+                    await this.processCountry(entityManager, country.code)
+                })
             }
         }
     }
 
-    private async processCountry(countryCode: string) {
+    private async processCountry(entityManager: EntityManager, countryCode: string) {
         const newValue = await KoronaDao.call(countryCode);
 
         if (newValue == undefined || newValue == 0) {
@@ -43,7 +47,8 @@ export class ThresholdNotificationService {
             exchange.dateTime = new Date()
             exchange.value = newValue
 
-            await ds.manager.save(exchange)
+            await entityManager.save(exchange)
+            // todo await this.exchangeRatesService.
             this.eventProcessor.onEvent(exchange)
         }
 
@@ -64,7 +69,7 @@ export class ThresholdNotificationService {
                 if (difference >= subscription.notificationThreshold) {
                     await this.notifyUser(countryCode, subscription.user, subscription.lastNotifiedValue, newValue);
                     subscription.lastNotifiedValue = newValue;
-                    await ds.manager.getRepository(SubscriptionThresholdData).save(subscription)
+                    await entityManager.getRepository(SubscriptionThresholdData).save(subscription)
                 }
             } catch (e) {
                 console.error(e)

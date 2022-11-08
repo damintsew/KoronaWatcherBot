@@ -31,5 +31,6 @@ export const ds = new DataSource({
         PendingTxId
     ],
     synchronize: true,
-    logging: true
+    logging: true,
+    cache: true
 });
