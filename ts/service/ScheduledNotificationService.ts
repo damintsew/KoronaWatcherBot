@@ -42,12 +42,13 @@ export class ScheduledNotificationService {
 
         let newValue: number;
         if (subscriptions.length > 0) {
-            newValue = await KoronaDao.call(countryCode)
-        }
-
-        if (newValue == null) {
+            // newValue = await KoronaDao.call(countryCode)
             newValue = (await this.exchangeRatesService.getRate(countryCode, "KORONA"))?.value;
         }
+
+        // if (newValue == null) {
+        //     newValue = (await this.exchangeRatesService.getRate(countryCode, "KORONA"))?.value;
+        // }
 
         for (let subscription of subscriptions) {
             console.log(subscription)
