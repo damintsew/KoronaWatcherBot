@@ -61,7 +61,7 @@ export class GlobalMessageAnnouncerService {
                     await ds.getRepository(SendToUser).save(sent)
                     // await ds.manager.save(a);
 
-                    await delay(200)
+                    await delay(250)
                 }
 
                 a.isSent = true;
@@ -71,7 +71,7 @@ export class GlobalMessageAnnouncerService {
     }
 
     async persistMessage() {
-        const messageId = 28;
+        const messageId = 29;
         let existingMgs
         try {
             existingMgs = await ds.manager.findOne(Announcements, {where: {messageId: messageId}});

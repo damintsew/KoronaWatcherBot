@@ -3,7 +3,7 @@ import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
 import {BaseSubscription} from "../entity/subscription/BaseSubscription";
-import {KoronaGarantexSpreadService} from "./KoronaGarantexSpreadService";
+import {KoronaGarantexSpreadService} from "./subscription/KoronaGarantexSpreadService";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {EventProcessor} from "../events/EventProcessor";

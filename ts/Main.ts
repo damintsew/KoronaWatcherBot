@@ -27,7 +27,7 @@ import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscri
 import {UserService} from "./service/UserService";
 import {ExchangeRatesService} from "./service/ExchangeRatesService";
 import {CronJobService} from "./service/CronJobService";
-import {KoronaGarantexSpreadService} from "./service/KoronaGarantexSpreadService";
+import {KoronaGarantexSpreadService} from "./service/subscription/KoronaGarantexSpreadService";
 import {BaseSubscriptionMenu} from "./wizard/BaseSubscriptionMenu";
 import {BinanceService} from "./service/BinanceService";
 

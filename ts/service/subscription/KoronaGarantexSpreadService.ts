@@ -1,16 +1,17 @@
-import {SpreadBaseService} from "./SpreadBaseService";
-import {ExchangeHistory} from "../entity/ExchangeHistory";
-import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
-import {SpreadReferenceData} from "../entity/subscription/SpreadReferenceData";
-import {ds} from "../data-source";
+import {SpreadBaseService} from "../SpreadBaseService";
+import {ExchangeHistory} from "../../entity/ExchangeHistory";
+import {KoronaGarantexSpreadSubscription} from "../../entity/subscription/KoronaGarantexSpreadSubscription";
+import {SpreadReferenceData} from "../../entity/subscription/SpreadReferenceData";
+import {ds} from "../../data-source";
 import {Service} from "typedi";
-import {findCountryByCode} from "./FlagUtilities";
-import {ExchangeRatesService} from "./ExchangeRatesService";
-import {StatisticService} from "./StatisticService";
-import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
-import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
-import {LocalUser} from "../entity/LocalUser";
+import {findCountryByCode} from "../FlagUtilities";
+import {ExchangeRatesService} from "../ExchangeRatesService";
+import {StatisticService} from "../StatisticService";
+import {PaymentSubscriptionService} from "../PaymentSubscriptionService";
+import {GlobalMessageAnnouncerService} from "../GlobalMessageAnnouncerService";
+import {LocalUser} from "../../entity/LocalUser";
 import Handlebars from "handlebars";
+import {EntityManager} from "typeorm";
 
 @Service()
 export class KoronaGarantexSpreadService extends SpreadBaseService {
@@ -47,9 +48,9 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         const baseRates = await this.exchangeRatesService.rates(["GARANTEX", "BINANCE"])
         const referenceData = await this.exchangeRatesService.getAllKoronaRates()
 
-        const spreads = {};
         const garantexRate = baseRates.find(baseRate => baseRate.type == "GARANTEX")
         const garantexSpread = this.processSpread(referenceData, garantexRate)
+
         const binanceRate = baseRates.find(baseRate => baseRate.type == "BINANCE")
         const binanceSpread = this.processSpread(referenceData, binanceRate)
 
@@ -76,18 +77,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
     private processSpread(referenceData: ExchangeHistory[], baseRates: ExchangeHistory) {
         const spreads = new Map<string, number>();
         for (const reference of referenceData) {
-            const currentSpread = this.calculateSpread(baseRates.value, reference.value)
-            /*const spread = spreads[reference.country] || {}
-
-            spread.country = reference.country
-            spread.rate = reference.value
-            if (baseRates.type == "GARANTEX") {
-                spread.garantexSpread = currentSpread
-            } else {
-                spread.binanceSpread = currentSpread
-            }*/
-
-            spreads[reference.country] = currentSpread
+            spreads[reference.country] = this.calculateSpread(baseRates.value, reference.value)
         }
 
         return spreads;
@@ -113,14 +103,15 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
                 data.koronaLastNotifiedValue = (await this.exchangeRatesService.getRate(data.country, "KORONA"))?.value
             }
         }
-
-        await this.processReference1(baseRate, subscription)
+        await ds.transaction(async entityManager => {
+            await this.processReference1(entityManager, baseRate, subscription)
+        })
     }
 
-    private async processReference1(baseRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
+    private async processReference1(entityManager: EntityManager, baseRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
         if (subscription.garantexLastNotifiedValue == null) {
             subscription.garantexLastNotifiedValue = baseRate.value;
-            await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
+            await entityManager.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
             return;
         }
 
@@ -171,8 +162,8 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         if (shouldNotify) {
             await this.notifyUser(subscription.user, templateData)
         }
-        await ds.getRepository(SpreadReferenceData).save(subscription.referenceData)
-        await ds.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
+        await entityManager.getRepository(SpreadReferenceData).save(subscription.referenceData)
+        await entityManager.getRepository(KoronaGarantexSpreadSubscription).save(subscription)
     }
 
     private async notifyUser(user: LocalUser, templateData: any) {

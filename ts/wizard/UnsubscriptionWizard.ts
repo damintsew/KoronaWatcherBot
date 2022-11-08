@@ -11,7 +11,7 @@ import {PaymentSubscriptionService} from "../service/PaymentSubscriptionService"
 import moment from "moment";
 import {SubscriptionService} from "../service/SubscriptionService";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
-import {KoronaGarantexSpreadService} from "../service/KoronaGarantexSpreadService";
+import {KoronaGarantexSpreadService} from "../service/subscription/KoronaGarantexSpreadService";
 
 const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
 const subscriptionService = Container.get(SubscriptionService);
