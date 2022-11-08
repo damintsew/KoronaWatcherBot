@@ -88,7 +88,8 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
             baseRate = (await this.exchangeRatesService.rates(["GARANTEX"]))[0]
         }
 
-        subscription.referenceData = await ds.getRepository(SpreadReferenceData).createQueryBuilder()
+        subscription.referenceData = await ds.getRepository(SpreadReferenceData)
+            .createQueryBuilder()
             .where({subscription: subscription})
             .orderBy({country: "ASC"})
             .cache(15000)

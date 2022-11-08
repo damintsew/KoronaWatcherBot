@@ -1,6 +1,5 @@
 import {Service} from "typedi";
 import {UserDao} from "../dao/UserDao";
-import {Api} from "@grammyjs/menu/out/deps.node";
 import {Bot} from "grammy";
 import {NewContext} from "../bot_config/Domain";
 

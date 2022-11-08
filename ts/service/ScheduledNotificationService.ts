@@ -45,9 +45,6 @@ export class ScheduledNotificationService {
             newValue = (await this.exchangeRatesService.getRate(countryCode, "KORONA"))?.value;
         }
 
-        // if (newValue == null) {
-        //     newValue = (await this.exchangeRatesService.getRate(countryCode, "KORONA"))?.value;
-        // }
         await ds.transaction(async entityManager => {
             for (let subscription of subscriptions) {
                 console.log(subscription)

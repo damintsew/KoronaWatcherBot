@@ -20,7 +20,7 @@ export class SpreadReferenceData {
     @Index("subscription_ind")
     @ManyToOne(type => KoronaGarantexSpreadSubscription,
         {
-            eager: true, onDelete: "CASCADE", orphanedRowAction: 'delete'
+            eager: false, onDelete: "CASCADE", orphanedRowAction: 'delete'
         })
     subscription: KoronaGarantexSpreadSubscription
 }

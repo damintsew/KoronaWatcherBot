@@ -74,7 +74,8 @@ export class SubscriptionService {
     }
 
     async removeThresholdById(id: number): Promise<SubscriptionThresholdData> {
-        const subscription = await ds.manager.getRepository(SubscriptionThresholdData).findOneBy({id: id})
+        const subscription = await ds.manager.getRepository(SubscriptionThresholdData)
+            .findOneBy({id: id})
         return ds.manager.remove(subscription);
     }
 
