@@ -1,5 +1,5 @@
 import {ExchangeRatesDao} from "../dao/ExchangeRatesDao";
-import {GarantexDao} from "../dao/GarantexDao";
+import {GarantexDao} from "../dao/rest/GarantexDao";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {SubscriptionService} from "./SubscriptionService";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";

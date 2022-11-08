@@ -29,6 +29,7 @@ import {ExchangeRatesService} from "./service/ExchangeRatesService";
 import {CronJobService} from "./service/CronJobService";
 import {KoronaGarantexSpreadService} from "./service/KoronaGarantexSpreadService";
 import {BaseSubscriptionMenu} from "./wizard/BaseSubscriptionMenu";
+import {BinanceService} from "./service/BinanceService";
 
 (async function () {
     await ds.initialize(); //todo get rid of this
@@ -38,6 +39,7 @@ const userService = Container.get(UserService);
 const exchangeRateService = Container.get(ExchangeRatesService);
 const spreadService = Container.get(KoronaGarantexSpreadService);
 const baseSubscriptionMenu = Container.get(BaseSubscriptionMenu);
+const binanceDao = Container.get(BinanceService);
 
 bot.api.setMyCommands([
     {command: 'rates', description: 'Показать текущий курс'},
@@ -139,6 +141,7 @@ bot.command(['help', 'start'], async ctx => {
 
 bot.command('debug', async ctx => {
     await ctx.reply(`userId = ${ctx.user.userId}`)
+    // console.log(await binanceDao.getAndSaveRate())
 })
 
 bot.catch((err) => {

@@ -5,6 +5,7 @@ import {StatisticService} from "./StatisticService";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
 import {Container, Service} from "typedi";
 import {LocalUser} from "../entity/LocalUser";
+import {ExchangeHistory} from "../entity/ExchangeHistory";
 
 @Service()
 export class ExchangeRatesService {
@@ -72,11 +73,22 @@ export class ExchangeRatesService {
         return messages;
     }
 
-    async rates(type: string = "GARANTEX", market: string = "usdtrub") {
-        return await this.exchangeDao.getGarantexRate(market)
+    async rates(types: string[], market: string = "usdtrub") {
+        return await this.exchangeDao.getRates(types, market)
     }
 
     private formatDate(date: Date): string {
         return moment(date).tz("Turkey").format("HH:mm:ss  DD.MM")
+    }
+
+    saveRate(stockMarket: string, symbol: string, rate: string) {
+        const exchange = new ExchangeHistory()
+        exchange.market = symbol
+        exchange.currency = symbol
+        exchange.dateTime = new Date()
+        exchange.value = Number.parseFloat(rate)
+        exchange.type = stockMarket
+
+        return this.exchangeDao.save(exchange)
     }
 }
