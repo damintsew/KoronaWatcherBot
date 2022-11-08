@@ -32,5 +32,6 @@ export const ds = new DataSource({
     ],
     synchronize: true,
     logging: true,
-    cache: true
+    cache: true,
+    connectTimeoutMS: 60_000
 });
