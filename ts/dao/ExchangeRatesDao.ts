@@ -1,14 +1,20 @@
 import {ds} from "../data-source";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
-import {In} from "typeorm";
+import {In, Repository} from "typeorm";
 import {Service} from "typedi";
 
 @Service()
 export class ExchangeRatesDao {
 
+    private repository: Repository<ExchangeHistory>;
+
+    constructor() {
+        this.repository = ds.getRepository(ExchangeHistory)
+    }
+
     async getAllKoronaRates() {
 
-        const maxIds = await ds.getRepository(ExchangeHistory)
+        const maxIds = await this.repository
             .createQueryBuilder("exchRates")
             .select("max(id) as id")
             .where({type: "KORONA"})
@@ -16,8 +22,7 @@ export class ExchangeRatesDao {
             .getRawMany()
             .then(result => result.map(ret => ret.id))
 
-
-        return ds.getRepository(ExchangeHistory)
+        return this.repository
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("country")
@@ -26,7 +31,7 @@ export class ExchangeRatesDao {
 
     async getKoronaRate(country: string) {
 
-        const maxIds = await ds.getRepository(ExchangeHistory)
+        const maxIds = await this.repository
             .createQueryBuilder("exchRates")
             .select("max(id) as id")
             .where({type: "KORONA", country: country})
@@ -34,7 +39,7 @@ export class ExchangeRatesDao {
             .getRawMany()
             .then(result => result.map(ret => ret.id))
 
-        return ds.getRepository(ExchangeHistory)
+        return this.repository
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("country")
@@ -43,7 +48,7 @@ export class ExchangeRatesDao {
 
     async getAllGarantexRates() {
 
-        const maxIds = await ds.getRepository(ExchangeHistory)
+        const maxIds = await this.repository
             .createQueryBuilder("exchRates")
             .select("max(id) as id")
             .where({type: "GARANTEX"})
@@ -51,33 +56,31 @@ export class ExchangeRatesDao {
             .getRawMany()
             .then(result => result.map(ret => ret.id))
 
-
-        return ds.getRepository(ExchangeHistory)
+        return this.repository
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("market")
             .getMany()
     }
 
-    async getGarantexRate(market: string) {
-
-        const maxIds = await ds.getRepository(ExchangeHistory)
+    async getRates(types: string[], market: string) {
+        const maxIds = await this.repository
             .createQueryBuilder("exchRates")
             .select("max(id) as id")
-            .where({type: "GARANTEX", market: market})
+            .where({type: In(types), market: market})
             .groupBy("market")
+            .groupBy("type")
             .getRawMany()
             .then(result => result.map(ret => ret.id))
 
-
-        return ds.getRepository(ExchangeHistory)
+        return this.repository
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("market")
-            .getOne()
+            .getMany()
     }
 
     save(history: ExchangeHistory) {
-        return ds.manager.save(history)
+        return this.repository.save(history)
     }
 }

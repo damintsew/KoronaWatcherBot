@@ -6,6 +6,7 @@ import {GarantexService} from "./GarantexService";
 import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
 import {UserCleanerService} from "./UserCleanerService";
 import {Service} from "typedi";
+import {BinanceService} from "./BinanceService";
 
 @Service()
 export class CronJobService {
@@ -21,13 +22,15 @@ export class CronJobService {
     userCleanerService: UserCleanerService
 
     garantexService: GarantexService
+    binanceService: BinanceService
 
     constructor(notificationService: ThresholdNotificationService,
                 messageAnnouncerService: GlobalMessageAnnouncerService,
                 paymentSubscriptionService: PaymentSubscriptionService,
                 userCleanerService: UserCleanerService,
                 scheduledNotificationService: ScheduledNotificationService,
-                garantexService: GarantexService) {
+                garantexService: GarantexService,
+                binanceService: BinanceService) {
         this.notificationService = notificationService;
 
         this.messageAnouncerService = messageAnnouncerService;
@@ -37,6 +40,7 @@ export class CronJobService {
         this.scheduledNotificationService = scheduledNotificationService;
 
         this.garantexService = garantexService;
+        this.binanceService = binanceService;
         this.everySecondJob = new CronJob('*/30 * * * * *', async () => {
             try {
                 await this.secondAction();
@@ -74,6 +78,7 @@ export class CronJobService {
     async secondAction(): Promise<void> {
         console.log("Call Garantex")
         await this.garantexService.process()
+        await this.binanceService.getAndSaveRate()
 
         console.log("End Call Garantex")
     }
