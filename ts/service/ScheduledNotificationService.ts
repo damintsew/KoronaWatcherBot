@@ -1,4 +1,3 @@
-import {KoronaDao} from "../dao/KoronaDao";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
@@ -49,22 +48,23 @@ export class ScheduledNotificationService {
         // if (newValue == null) {
         //     newValue = (await this.exchangeRatesService.getRate(countryCode, "KORONA"))?.value;
         // }
+        await ds.transaction(async entityManager => {
+            for (let subscription of subscriptions) {
+                console.log(subscription)
+                if (subscription.lastNotifiedValue == null) {
+                    subscription.lastNotifiedValue = newValue;
+                }
 
-        for (let subscription of subscriptions) {
-            console.log(subscription)
-            if (subscription.lastNotifiedValue == null) {
+                let difference = this.calculateDifference(subscription.lastNotifiedValue, newValue);
+                console.log(`!!!!Country=${subscription.country} UserId = ${subscription.user.userId} newValue = ${newValue} lastNotifiedValue = ${subscription.lastNotifiedValue} ` +
+                    `difference is : ${difference}`)
+
+                await this.notifyUser(countryCode, subscription.user, subscription.lastNotifiedValue, newValue);
                 subscription.lastNotifiedValue = newValue;
+                await entityManager.getRepository(SubscriptionScheduledData)
+                    .update(subscription.id, {lastNotifiedValue: newValue})
             }
-
-            let difference = this.calculateDifference(subscription.lastNotifiedValue, newValue);
-            console.log(`!!!!Country=${subscription.country} UserId = ${subscription.user.userId} newValue = ${newValue} lastNotifiedValue = ${subscription.lastNotifiedValue} ` +
-                `difference is : ${difference}`)
-
-            await this.notifyUser(countryCode, subscription.user, subscription.lastNotifiedValue, newValue);
-            subscription.lastNotifiedValue = newValue;
-            await ds.manager.getRepository(SubscriptionScheduledData)
-                .update(subscription.id, {lastNotifiedValue: newValue})
-        }
+        })
     }
 
     private async notifyUser(countryCode: string, user: LocalUser, oldValue: number, newValue: number) {
