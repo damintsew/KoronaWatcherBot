@@ -91,6 +91,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         subscription.referenceData = await ds.getRepository(SpreadReferenceData).createQueryBuilder()
             .where({subscription: subscription})
             .orderBy({country: "ASC"})
+            .cache(15000)
             .getMany()
 
         for (const data of subscription.referenceData) {
