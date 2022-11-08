@@ -53,7 +53,6 @@ export class ThresholdNotificationService {
             this.eventProcessor.onEvent(exchange)
         }
 
-
         const subscriptions = await this.getSubscriptions(entityManager, countryCode);
         for (let subscription of subscriptions) {
 

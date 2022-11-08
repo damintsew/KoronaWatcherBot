@@ -19,7 +19,7 @@ export class ExchangeRatesDao {
             .select("max(id) as id")
             .where({type: "KORONA"})
             .groupBy("country")
-            .cache(30000)
+            .cache(180_000)
             .getRawMany()
             .then(result => result.map(ret => ret.id))
 
@@ -38,7 +38,7 @@ export class ExchangeRatesDao {
             .select("max(id) as id")
             .where({type: "KORONA", country: country})
             .groupBy("country")
-            .cache(30000)
+            .cache(180_000)
             .getRawMany()
             .then(result => result.map(ret => ret.id))
 
@@ -46,7 +46,7 @@ export class ExchangeRatesDao {
             .createQueryBuilder()
             .where({id: In(maxIds)})
             .orderBy("country")
-            .cache(6000000)
+            .cache(6000_000)
             .getOne()
     }
 
