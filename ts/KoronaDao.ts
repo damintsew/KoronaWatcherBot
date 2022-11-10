@@ -20,14 +20,14 @@ export class KoronaDao {
 
     private static getHttpHeader() {
         return ['Accept: application/vnd.cft-data.v2.94+json',
-            'Cookie: _gali=changeable-field-select-option-USD; qpay-web/3.0_csrf-token-v2=ba98ca590c6490d9cf5d3f3baed61ab6; ROUTEID=7496d571b1f3cd20|Y2FvZ; tmr_reqNum=39; tmr_lvid=b277599e0794e482a6bd9147efbc372e; tmr_lvidTS=1665165306717; _ga=GA1.1.235614836.1666956485; _ga_H68H5PL1N6=GS1.1.1667142541.3.1.1667142545.56.0.0; _gcl_au=1.1.1969750458.1667142544; qpay-web/3.0_locale=en-gb; CookieControl={"necessaryCookies":[],"optionalCookies":{"Google":"accepted"},"statement":{"shown":true,"updated":"01/01/2021"},"consentDate":1666784566769,"consentExpiry":90,"interactedWith":true,"user":"36975655-254F-4D28-A8D2-A168675D07E9"}; _ym_d=1666784565; _ym_uid=1664655105320075748; client-id=4b2ada5b-f76d-4bfe-b836-105f21ece7ec',
+            'Cookie: qpay-web/3.0_csrf-token-v2=9decd25deaaa314d665489ca3cc70aaf; _gali=changeable-field-input-amount; ROUTEID=95d5465b93cbc125|Y20BZ; _ym_isad=2; _ym_visorc=b; _dc_gtm_UA-100141486-1=1; _dc_gtm_UA-100141486-2=1; _dc_gtm_UA-100141486-25=1; _dc_gtm_UA-100141486-26=1; _ga=GA1.1.2113913942.1667813788; _ga_H68H5PL1N6=GS1.1.1668088153.2.0.1668088153.60.0.0; _gid=GA1.2.2119481893.1668088149; qpay-web/3.0_locale=en-gb; _gat_UA-100141486-25=1; _gat_UA-100141486-33=1; _gcl_au=1.1.472329890.1667813789; _ym_d=1667813789; _ym_uid=1664655105320075748; tmr_reqNum=42; client-id=4b2ada5b-f76d-4bfe-b836-105f21ece7ec',
             'Accept-Encoding: gzip, deflate, br',
             'Host: koronapay.com',
             'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Safari/605.1.15',
             'Accept-Language: en-gb',
             'Referer: https://koronapay.com/transfers/online/',
             'Connection: keep-alive',
-            'x-csrf-token: ba98ca590c6490d9cf5d3f3baed61ab6',
+            'x-csrf-token: 9decd25deaaa314d665489ca3cc70aaf',
             'x-application: Qpay-Web/3.0'];
     }
 }
