@@ -15,7 +15,7 @@ export class UserDao {
     }
 
     saveUser(user: LocalUser): Promise<LocalUser> {
-        return ds.manager.save(user)
+        return ds.manager.save<LocalUser>(user)
     }
 
     getAdmins() {
@@ -27,7 +27,7 @@ export class UserDao {
     }
 
     updateUser(user: LocalUser) {
-        return ds.manager.save(user)
+        return ds.manager.save<LocalUser>(user)
     }
 
     findUsersNotMarkedForDeletion() {

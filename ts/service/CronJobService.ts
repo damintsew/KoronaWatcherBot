@@ -41,7 +41,7 @@ export class CronJobService {
 
         this.garantexService = garantexService;
         this.binanceService = binanceService;
-        this.everySecondJob = new CronJob('0 */1 * * * *', async () => {
+        this.everySecondJob = new CronJob('30 */1 * * * *', async () => {
             try {
                 await this.secondAction();
             } catch (e) {

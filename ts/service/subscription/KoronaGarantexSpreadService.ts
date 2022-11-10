@@ -24,7 +24,10 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         "\n" +
         "Страна | Курс ЗК | Спред Гарантекс | Спред Бинанс\n" +
         "{{#each spreads}}" +
-        "   {{flag}} {{countryName}} | {{koronaRate}} | {{garantexSpread}} %  {{#if binanceSpread}}| {{binanceSpread}} % {{/if}}\n" +
+        "{{#if spreadExceeded}} <br> {{/if}}  " +
+        "  {{flag}} {{countryName}} | {{koronaRate}} | {{garantexSpread}} %  {{#if binanceSpread}}| {{binanceSpread}} % {{/if}}" +
+        "{{#if spreadExceeded}} </br> {{/if}} " +
+        "\n" +
         "{{/each}}"
     private readonly template: HandlebarsTemplateDelegate
 
