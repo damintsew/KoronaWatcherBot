@@ -1,5 +1,4 @@
 import express from 'express';
-import {ExchangeRatesDao} from "../dao/ExchangeRatesDao";
 import {KoronaDao} from "../dao/rest/KoronaDao";
 import {UnistreamDao} from "../dao/rest/UnistreamDao";
 
