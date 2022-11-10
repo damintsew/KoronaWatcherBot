@@ -1,5 +1,5 @@
 import {CronJob} from 'cron';
-import {KoronaDao} from "../KoronaDao";
+import {KoronaDao} from "../dao/rest/KoronaDao";
 import {ThresholdNotificationService} from "./ThresholdNotificationService";
 import {MessageAnouncerService} from "../MessageAnouncerService";
 import {ScheduledNotificationService} from "./ScheduledNotificationService";

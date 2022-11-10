@@ -1,6 +1,7 @@
 import express from 'express';
 import {ExchangeRatesDao} from "../dao/ExchangeRatesDao";
-import {KoronaDao} from "../KoronaDao";
+import {KoronaDao} from "../dao/rest/KoronaDao";
+import {UnistreamDao} from "../dao/rest/UnistreamDao";
 
 
 export default class ExpressServer {
@@ -19,6 +20,12 @@ export default class ExpressServer {
                 country: country,
                 value: value
             });
+        })
+
+        this.appServer.get('/unistream/:country', async (req, res) => {
+            const country = req.params.country
+            let response = await UnistreamDao.call(country)
+            res.send(response);
         })
     }
 
