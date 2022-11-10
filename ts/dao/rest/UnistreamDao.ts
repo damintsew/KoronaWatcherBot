@@ -18,7 +18,7 @@ interface UnistreamResponse {
 export class UnistreamDao {
 
     static async call(countryCode: string): Promise<UnistreamResponse> {
-        console.log(`Requesting data for country ${countryCode}`)
+        console.log(`UnistreamDao for country ${countryCode}`)
         try {
             const {
                 statusCode,
