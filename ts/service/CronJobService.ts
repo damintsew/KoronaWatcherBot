@@ -59,7 +59,7 @@ export class CronJobService {
                 console.error(e);
             }
         });
-        this.everyHourJob = new CronJob('1 0 0/1 * * *', async () => {
+        this.everyHourJob = new CronJob('1 10 0/1 * * *', async () => {
             try {
                 await this.hourAction();
             } catch (e) {
@@ -83,7 +83,8 @@ export class CronJobService {
         console.log("Call Garantex")
         await this.garantexService.process()
         await this.binanceService.getAndSaveRate()
-        await this.unistreamService.getAndSaveRates()
+        this.unistreamService.getAndSaveRates()
+            .catch(console.error)
 
         console.log("End Call Garantex")
     }
@@ -98,9 +99,12 @@ export class CronJobService {
 
     async hourAction(): Promise<void> {
         console.log("Hour")
-        await this.scheduledNotificationService.process()
-        await this.messageAnouncerService.globalMessageAnnounce();
-        await this.paymentSubscriptionService.findOutdatedSubscriptionsAndNotifyUser();
+        this.scheduledNotificationService.process()
+            .catch(console.error)
+        this.messageAnouncerService.globalMessageAnnounce()
+            .catch(console.error)
+        this.paymentSubscriptionService.findOutdatedSubscriptionsAndNotifyUser()
+            .catch(console.error)
     }
 
     stop() {
