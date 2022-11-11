@@ -89,6 +89,8 @@ export class CronJobService {
 
         console.log("End Call Korona")
         await this.messageAnouncerService.persistMessage();
+        await this.messageAnouncerService.globalMessageAnnounce();
+
     }
 
     async hourAction(): Promise<void> {

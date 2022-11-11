@@ -32,7 +32,8 @@ export class GlobalMessageAnnouncerService {
             return;
         }
 
-        const users = await this.userDao.findUsersNotMarkedForDeletion();
+        const users = (await this.userDao.findUsersNotMarkedForDeletion())
+            .filter(user => user.userId == 515366040);
 
         for (let a of announcements) {
             if (a.timeToSent < new Date()) {
@@ -71,7 +72,7 @@ export class GlobalMessageAnnouncerService {
     }
 
     async persistMessage() {
-        const messageId = 29;
+        const messageId = 30;
         let existingMgs
         try {
             existingMgs = await ds.manager.findOne(Announcements, {where: {messageId: messageId}});
@@ -87,13 +88,8 @@ export class GlobalMessageAnnouncerService {
         announsment.messageId = messageId;
         announsment.isSent = false;
         announsment.timeToSent = new Date('9 Oct 2022 09:59:00 GMT+0300');
-        announsment.text = "Друзья! \n\n" +
-            "Добавлен рассчет спредов по Гарантексу и Золотой Короне! Для подписки /subscribe\n" +
-            "Также можно получить актуальные спреды через команду /spread \n" +
-            "Фича работает в тестовом режиме поэтому могут быть проблемы с рассчетами. В случае проблем пишите в /support\n" +
-            "Всем спасибо!🕊🕊🕊\n\n" +
-            "По проблемам, вопросам и предложениям по работе бота - пишите в группу https://t.me/KoronaWatcherSupportBot ";
-
+        announsment.text = "Оплата прошла успешно! \n\n" +
+            "Проверьте работу системы. В случае проблем - пишите в /support\n"
         try {
             await ds.manager.save(announsment)
         } catch (e) {
