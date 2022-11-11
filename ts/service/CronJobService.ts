@@ -7,6 +7,7 @@ import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
 import {UserCleanerService} from "./UserCleanerService";
 import {Service} from "typedi";
 import {BinanceService} from "./BinanceService";
+import {UnistreamService} from "./external/UnistreamService";
 
 @Service()
 export class CronJobService {
@@ -23,6 +24,7 @@ export class CronJobService {
 
     garantexService: GarantexService
     binanceService: BinanceService
+    unistreamService: UnistreamService
 
     constructor(notificationService: ThresholdNotificationService,
                 messageAnnouncerService: GlobalMessageAnnouncerService,
@@ -30,7 +32,8 @@ export class CronJobService {
                 userCleanerService: UserCleanerService,
                 scheduledNotificationService: ScheduledNotificationService,
                 garantexService: GarantexService,
-                binanceService: BinanceService) {
+                binanceService: BinanceService,
+                unistreamService: UnistreamService) {
         this.notificationService = notificationService;
 
         this.messageAnouncerService = messageAnnouncerService;
@@ -41,6 +44,7 @@ export class CronJobService {
 
         this.garantexService = garantexService;
         this.binanceService = binanceService;
+        this.unistreamService = unistreamService;
         this.everySecondJob = new CronJob('30 * * * * *', async () => {
             try {
                 await this.secondAction();
@@ -79,6 +83,7 @@ export class CronJobService {
         console.log("Call Garantex")
         await this.garantexService.process()
         await this.binanceService.getAndSaveRate()
+        await this.unistreamService.getAndSaveRates()
 
         console.log("End Call Garantex")
     }
@@ -89,8 +94,6 @@ export class CronJobService {
 
         console.log("End Call Korona")
         await this.messageAnouncerService.persistMessage();
-        await this.messageAnouncerService.globalMessageAnnounce();
-
     }
 
     async hourAction(): Promise<void> {

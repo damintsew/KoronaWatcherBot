@@ -17,12 +17,7 @@ Container.set(Bot, bot);
 import {koronaSubscriptionMenu} from "./wizard/KoronaSubscriptionWizard";
 import {ds} from "./data-source";
 import {formatUnsubscribeText, unsubscribeMenu} from "./wizard/UnsubscriptionWizard";
-
-import {
-    garantexCreateSubscription,
-    garantexOnlySubscription,
-    garantexSubscriptionMenu
-} from "./wizard/GarantexSubscriptionWizard";
+import {garantexSubscriptionMenu} from "./wizard/GarantexSubscriptionWizard";
 import {spreadConversation, spreadSubscriptionMenu} from "./wizard/SpreadSubscriptionWizard";
 import {UserService} from "./service/UserService";
 import {ExchangeRatesService} from "./service/ExchangeRatesService";
@@ -139,9 +134,10 @@ bot.command(['help', 'start'], async ctx => {
     await ctx.reply(text)
 })
 
+// const und = Container.get(UnistreamDao)
 bot.command('debug', async ctx => {
     await ctx.reply(`userId = ${ctx.user.userId}`)
-    // console.log(await binanceDao.getAndSaveRate())
+    // console.log(await und.getLatestTrades())
 })
 
 bot.catch((err) => {

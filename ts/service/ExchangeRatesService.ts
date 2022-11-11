@@ -21,7 +21,7 @@ export class ExchangeRatesService {
     }
 
     getAllKoronaRates() {
-        return this.exchangeDao.getAllKoronaRates()
+        return this.exchangeDao.getRatesByType("KORONA")
     }
 
     getRate(countryCode: string, korona: string) {
@@ -30,23 +30,38 @@ export class ExchangeRatesService {
 
     async getAllRates(ctx) {
         this.statisticService.callRate(ctx.user)
-        const rates = await this.exchangeDao.getAllKoronaRates()
+        let rates = await this.exchangeDao.getRatesByType("KORONA")
 
         const messages = []
         if (rates.length > 0) {
             messages.push(`Курсы валют в Короне на: ${this.formatDate(rates[0].dateTime)}`)
-            for (const rate of rates) {
-                const msg = `${mapCountryToFlag(rate.country)}  ${rate.currency}  ${rate.value} ` +
-                    `${findCountryByCode(rate.country).text}`
-                messages.push(msg);
-            }
+            messages.push(...this.printRates(rates));
         } else {
             messages.push("Что-то сломалось. По Короне нет данных по курсам валют. Пишите в /support")
+        }
+
+        rates = await this.exchangeDao.getRatesByType("UNISTREAM")
+        if (rates.length > 0) {
+            messages.push("")
+            messages.push(`Курсы валют в Unistream на: ${this.formatDate(rates[0].dateTime)}`)
+            messages.push(...this.printRates(rates));
+        } else {
+            messages.push("Что-то сломалось. По Unistream нет данных по курсам валют. Пишите в /support")
         }
 
         messages.push(...await this.garantexRatesWithValidation(ctx.user));
 
         ctx.reply(messages.join("\n"))
+    }
+
+    private printRates(rates: ExchangeHistory[]) {
+        const messages = []
+        for (const rate of rates) {
+            const msg = `${mapCountryToFlag(rate.country)}  ${rate.currency}  ${rate.value} ` +
+                `${findCountryByCode(rate.country).text}`
+            messages.push(msg);
+        }
+        return messages;
     }
 
     private async garantexRatesWithValidation(user: LocalUser) {
@@ -81,13 +96,14 @@ export class ExchangeRatesService {
         return moment(date).tz("Turkey").format("HH:mm:ss  DD.MM")
     }
 
-    saveRate(stockMarket: string, symbol: string, rate: string) {
+    saveRate(stockMarket: string, symbol: string, rate: number, country = null) {
         const exchange = new ExchangeHistory()
         exchange.market = symbol
         exchange.currency = symbol
         exchange.dateTime = new Date()
-        exchange.value = Number.parseFloat(rate)
+        exchange.value = rate
         exchange.type = stockMarket
+        exchange.country = country
 
         return this.exchangeDao.save(exchange)
     }

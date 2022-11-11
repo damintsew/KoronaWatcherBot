@@ -23,7 +23,7 @@ export class BinanceService {
         }
 
         const firstBid = response.bids[0];
-        const value = firstBid[0];
+        const value = Number.parseFloat(firstBid[0]);
 
         const exchangeHist = await this.ratesService.saveRate("BINANCE", "usdtrub", value);
         await this.eventProcessor.onEvent(exchangeHist)
