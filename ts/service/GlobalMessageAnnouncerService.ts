@@ -32,8 +32,7 @@ export class GlobalMessageAnnouncerService {
             return;
         }
 
-        const users = (await this.userDao.findUsersNotMarkedForDeletion())
-            .filter(user => user.userId == 515366040);
+        const users = await this.userDao.findUsersNotMarkedForDeletion()
 
         for (let a of announcements) {
             if (a.timeToSent < new Date()) {
