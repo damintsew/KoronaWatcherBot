@@ -10,7 +10,7 @@ import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {LocalUser} from "../entity/LocalUser";
 
 @Service()
-export class GarantexService {
+export class OldGarantexService {
 
     private exchangeRatesDao: ExchangeRatesDao;
     private garantexDao: GarantexDao;

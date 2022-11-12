@@ -21,16 +21,27 @@ export class ExchangeRatesService {
     }
 
     getAllKoronaRates() {
-        return this.exchangeDao.getRatesByType("KORONA")
+        return this.exchangeDao.getCountryBasedRate("KORONA")
     }
 
-    getRate(countryCode: string, korona: string) {
-        return this.exchangeDao.getKoronaRate(countryCode);
+    getRates(type: string, currency: string, countryCode: string = null) {
+        if (type == "KORONA" || type == "UNISTREAM") {
+            return this.exchangeDao.getCountryBasedRate(type, countryCode);
+        } else {
+            return this.exchangeDao.getStockRates([type], currency)
+        }
+    }
+
+    async getSingleRate(market: string, currency: string, countryCode: string = null) {
+        const rates = await this.getRates(market, currency, countryCode)
+        if (rates.length > 0) {
+            return rates[0]
+        } else return null
     }
 
     async getAllRates(ctx) {
         this.statisticService.callRate(ctx.user)
-        let rates = await this.exchangeDao.getRatesByType("KORONA")
+        let rates = await this.exchangeDao.getCountryBasedRate("KORONA")
 
         const messages = []
         if (rates.length > 0) {
@@ -40,7 +51,7 @@ export class ExchangeRatesService {
             messages.push("Что-то сломалось. По Короне нет данных по курсам валют. Пишите в /support")
         }
 
-        rates = await this.exchangeDao.getRatesByType("UNISTREAM")
+        rates = await this.exchangeDao.getCountryBasedRate("UNISTREAM")
         if (rates.length > 0) {
             messages.push("")
             messages.push(`Курсы валют в Unistream на: ${this.formatDate(rates[0].dateTime)}`)
@@ -51,7 +62,7 @@ export class ExchangeRatesService {
 
         messages.push(...await this.garantexRatesWithValidation(ctx.user));
 
-        ctx.reply(messages.join("\n"))
+        return ctx.reply(messages.join("\n"))
     }
 
     private printRates(rates: ExchangeHistory[]) {
@@ -89,11 +100,11 @@ export class ExchangeRatesService {
     }
 
     async rates(types: string[], market: string = "usdtrub") {
-        return await this.exchangeDao.getRates(types, market)
+        return await this.exchangeDao.getStockRates(types, market)
     }
 
     private formatDate(date: Date): string {
-        return moment(date).tz("Turkey").format("HH:mm:ss  DD.MM")
+        return moment(date).tz("Turkey").format("HH:mm:ss DD.MM")
     }
 
     saveRate(stockMarket: string, symbol: string, rate: number, country = null) {

@@ -7,22 +7,28 @@ import {KoronaGarantexSpreadService} from "./subscription/KoronaGarantexSpreadSe
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {EventProcessor} from "../events/EventProcessor";
-import {ThresholdNotificationService} from "./ThresholdNotificationService";
 import {Service} from "typedi";
+import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
+import {GarantexService} from "./subscription/GarantexService";
 
 @Service()
 export class SubscriptionService {
 
     private eventProcessor: EventProcessor
     private spreadService: KoronaGarantexSpreadService
+    private garantexService: GarantexService
 
-    constructor(eventProcessor: EventProcessor, spreadService: KoronaGarantexSpreadService) {
+    constructor(eventProcessor: EventProcessor,
+                spreadService: KoronaGarantexSpreadService,
+                garService: GarantexService) {
         this.eventProcessor = eventProcessor;
         this.spreadService = spreadService;
+        this.garantexService = garService;
+
         const that = this
         eventProcessor.subscribe({
             onEvent(exchangeValue: ExchangeHistory) {
-                that.processSubs(exchangeValue)
+                that.processSubscriptions1(exchangeValue)
             }
         })
     }
@@ -59,7 +65,7 @@ export class SubscriptionService {
             .innerJoinAndSelect("getScheduledSubscriptions.user", "user")
             .innerJoinAndSelect("getScheduledSubscriptions.triggerTime", "trigger")
             .where("trigger.timeHours = :hour and country = :countryCode",
-            // .where("trigger.timeHours = :hour and country = :countryCode and user.deletionMark = false",
+                // .where("trigger.timeHours = :hour and country = :countryCode and user.deletionMark = false",
                 {hour: hour, countryCode: countryCode})
             .getMany();
     }
@@ -156,7 +162,7 @@ export class SubscriptionService {
             .where("user.userId = :userId", {userId: userId})
             .delete()
 
-         await ds.getRepository(SubscriptionScheduledData)
+        await ds.getRepository(SubscriptionScheduledData)
             .createQueryBuilder("s")
             .innerJoinAndSelect("s.user", "user")
             .where("user.userId = :userId", {userId: userId})
@@ -173,6 +179,16 @@ export class SubscriptionService {
             .getMany()
     }
 
+    // todo fix duplicate code
+    async getSubscriptions(): Promise<BaseSubscription[]> {
+        return ds.getRepository(BaseSubscription)
+            .createQueryBuilder("s")
+            .innerJoinAndSelect("s.user", "user")
+            .innerJoinAndSelect("user.subscriptions", "subscriptions")
+            .where("user.deletionMark = false")
+            .getMany()
+    }
+
     update(subs: BaseSubscription) {
         return ds.getRepository(BaseSubscription).save(subs)
     }
@@ -180,7 +196,7 @@ export class SubscriptionService {
     //todo move to DAO
 
 
-    async processSubs(exchangeRate: ExchangeHistory) {
+    async processSubscriptions1(exchangeRate: ExchangeHistory) {
         let baseSubscriptions = await this.getSubscriptionsByType<KoronaGarantexSpreadSubscription>("SPREAD");
         for (const subscription of baseSubscriptions) {
             // todo move to service
@@ -188,6 +204,16 @@ export class SubscriptionService {
                 await this.spreadService.processReference(null, exchangeRate, subscription)
             } else if (exchangeRate.type == "GARANTEX") {
                 await this.spreadService.processReference(exchangeRate, null, subscription)
+            }
+        }
+
+    }
+
+    async processSubscriptions() {
+        const baseSubscriptions = await this.getSubscriptions()
+        for (const subscription of baseSubscriptions) {
+            if (subscription instanceof GarantexSubscription) {
+                await this.garantexService.process(subscription)
             }
         }
     }

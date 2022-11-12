@@ -105,7 +105,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
                 }
             }
             if (data.koronaLastNotifiedValue == null) {
-                data.koronaLastNotifiedValue = (await this.exchangeRatesService.getRate(data.country, "KORONA"))?.value
+                data.koronaLastNotifiedValue = (await this.exchangeRatesService.getSingleRate("KORONA", "USD", data.country))?.value
             }
         }
         await ds.transaction(async entityManager => {

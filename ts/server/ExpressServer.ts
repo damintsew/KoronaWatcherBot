@@ -15,7 +15,7 @@ export default class ExpressServer {
 
 
         this.appServer.get('/', async (req, res) => {
-            let exchangeRates = await this.exchangeRateDao.getRatesByType("KORONA");
+            let exchangeRates = await this.exchangeRateDao.getCountryBasedRate("KORONA");
             res.send({ rates: exchangeRates });
         })
     }
