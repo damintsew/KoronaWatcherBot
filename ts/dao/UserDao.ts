@@ -10,7 +10,7 @@ export class UserDao {
             .createQueryBuilder("getUserById")
             .leftJoinAndSelect("getUserById.subscriptions", "sent")
             .where({'userId': userId})
-            .cache(600_000)
+            // .cache(600_000)
             .getOne()
     }
 
