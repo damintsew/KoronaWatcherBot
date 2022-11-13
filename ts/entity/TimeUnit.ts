@@ -1,6 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique} from "typeorm";
-import {SubscriptionData} from "./SubscriptionData";
-import {SubscriptionScheduledData} from "./SubscriptionScheduledData";
+import {SubscriptionData} from "./subscription/SubscriptionData";
+import {SubscriptionScheduledData} from "./subscription/SubscriptionScheduledData";
 
 @Entity('time_unit')
 @Unique("constraint_unique_time_unit", ['timeHours', 'subscription'])

@@ -1,21 +1,27 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {NewContext} from "../bot_config/Domain";
 import {findCountryByCode} from "../service/FlagUtilities";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
-import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
+import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
+import {SubscriptionScheduledData} from "../entity/subscription/SubscriptionScheduledData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {BaseSubscription} from "../entity/subscription/BaseSubscription";
-import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
+import {GarantexSubscription} from "../entity/subscription/threshold/GarantexSubscription";
 import {Container} from "typedi";
 import {PaymentSubscriptionService} from "../service/PaymentSubscriptionService";
 import moment from "moment";
 import {SubscriptionService} from "../service/SubscriptionService";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {KoronaGarantexSpreadService} from "../service/subscription/KoronaGarantexSpreadService";
+import {GarantexService} from "../service/subscription/threshold/GarantexService";
+import {UnistreamThresholdSubscription} from "../entity/subscription/threshold/UnistreamThresholdSubscription";
+import {UnistreamService} from "../service/subscription/threshold/UnistreamService";
 
 const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
 const subscriptionService = Container.get(SubscriptionService);
+
 const koronaGarantexSpreadService = Container.get(KoronaGarantexSpreadService)
+const garantexService = Container.get(GarantexService)
+const unistreamService = Container.get(UnistreamService)
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {
@@ -100,19 +106,25 @@ function newButton(subscription: BaseSubscription) {
 
 function formatTextMessage(s: BaseSubscription) {
     if (s instanceof GarantexSubscription) {
-        return `Garantex: ${s.market} уведомлять при изменении на ${s.notificationThreshold}`
+        return garantexService.getText(s)
+    }
+    if (s instanceof UnistreamThresholdSubscription) {
+        return unistreamService.getText(s)
     }
     if (s instanceof KoronaGarantexSpreadSubscription) {
-        return koronaGarantexSpreadService.formatTextMessage(s)
+        return koronaGarantexSpreadService.getText(s)
     }
 }
 
 function formatButtonText(s: BaseSubscription) {
     if (s instanceof GarantexSubscription) {
-        return `Garantex: ${s.market} изменение на ${s.notificationThreshold}`
+        return garantexService.getButtonText(s)
+    }
+    if (s instanceof UnistreamThresholdSubscription) {
+        return unistreamService.getButtonText(s)
     }
     if (s instanceof KoronaGarantexSpreadSubscription) {
-        return koronaGarantexSpreadService.formatButtonText(s)
+        return koronaGarantexSpreadService.getButtonText(s)
     }
 }
 
@@ -137,9 +149,9 @@ async function formatUnsubscribeText(userId: number) {
     if (paymentSubs.length > 0) {
         messages.push("", "Платные подписки:")
         for (let paym of paymentSubs) {
-            let msg = `${paym.type}, заканчивается ${moment(paym.expirationDate).format("DD.MM.YYY HH:ss")}`
+            let msg = `${paym.type}, заканчивается ${moment(paym.expirationDate).format("DD.MM.YYYY")}`
             if (paym.trial) {
-                msg += " Триальная подписка"
+                msg += " (триальная подписка)"
             }
             messages.push(msg)
         }

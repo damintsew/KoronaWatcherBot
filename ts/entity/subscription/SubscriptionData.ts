@@ -1,5 +1,5 @@
 import {Column, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
-import {LocalUser} from "./LocalUser";
+import {LocalUser} from "../LocalUser";
 
 export abstract class SubscriptionData {
 

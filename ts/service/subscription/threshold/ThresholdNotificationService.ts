@@ -1,18 +1,19 @@
-import {KoronaDao} from "../dao/KoronaDao";
-import {ds} from "../data-source";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
-import {ExchangeHistory} from "../entity/ExchangeHistory";
-import {delay} from "../Util";
-import {countries, mapCountryToFlag} from "./FlagUtilities";
-import {EventProcessor} from "../events/EventProcessor";
+import {KoronaDao} from "../../../dao/KoronaDao";
+import {ds} from "../../../data-source";
+import {SubscriptionThresholdData} from "../../../entity/subscription/threshold/SubscriptionThresholdData";
+import {ExchangeHistory} from "../../../entity/ExchangeHistory";
+import {delay} from "../../../Util";
+import {countries, mapCountryToFlag} from "../../FlagUtilities";
+import {EventProcessor} from "../../../events/EventProcessor";
 import {Service} from "typedi";
-import {SubscriptionService} from "./SubscriptionService";
-import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
-import {LocalUser} from "../entity/LocalUser";
+import {SubscriptionService} from "../../SubscriptionService";
+import {GlobalMessageAnnouncerService} from "../../GlobalMessageAnnouncerService";
+import {LocalUser} from "../../../entity/LocalUser";
 import {EntityManager} from "typeorm";
-import {ExchangeRatesService} from "./ExchangeRatesService";
+import {ExchangeRatesService} from "../../ExchangeRatesService";
 import e from "express";
 
+//deprecataed
 @Service()
 export class ThresholdNotificationService {
 

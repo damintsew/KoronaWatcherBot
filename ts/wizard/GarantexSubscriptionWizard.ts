@@ -1,6 +1,6 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {MyConversation, NewContext} from "../bot_config/Domain";
-import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
+import {GarantexSubscription} from "../entity/subscription/threshold/GarantexSubscription";
 import {QueryFailedError} from "typeorm";
 import {Container} from "typedi";
 import {PaymentValidationWizard} from "./PaymentValidationWizard";
@@ -80,7 +80,7 @@ function createDishMenu(text: string, payload: string) {
                 }
                 await ctx.editMessageText(message)
                 if (success) {
-                    await ctx.reply("Подписка успешно сохранена")
+                    await ctx.reply("Подписка успешно сохранена", {reply_markup: {remove_keyboard: true}})
                 }
                 return ctx.menu.close()
             }

@@ -12,32 +12,19 @@ export class ExchangeRatesDao {
         this.repository = ds.getRepository(ExchangeHistory)
     }
 
-    async getRatesByType(type: string) {
+    async getCountryBasedRate(type: string, country?: string) {
 
-        const maxIds = await this.repository
-            .createQueryBuilder("rates")
+        const query = this.repository
+            .createQueryBuilder("exchRates")
             .select("max(id) as id")
             .where({type: type})
             .groupBy("country")
-            .cache(120_000)
-            .getRawMany()
-            .then(result => result.map(ret => ret.id))
 
-        return this.repository
-            .createQueryBuilder()
-            .where({id: In(maxIds)})
-            .orderBy("country")
-            .cache(6000000)
-            .getMany()
-    }
+        if (country != null) {
+            query.where({country: country})
+        }
 
-    async getKoronaRate(country: string) {
-
-        const maxIds = await this.repository
-            .createQueryBuilder("exchRates")
-            .select("max(id) as id")
-            .where({type: "KORONA", country: country})
-            .groupBy("country")
+        const maxIds = await query
             .cache(180_000)
             .getRawMany()
             .then(result => result.map(ret => ret.id))
@@ -47,7 +34,7 @@ export class ExchangeRatesDao {
             .where({id: In(maxIds)})
             .orderBy("country")
             .cache(6000_000)
-            .getOne()
+            .getMany()
     }
 
     async getAllGarantexRates() {
@@ -68,7 +55,7 @@ export class ExchangeRatesDao {
             .getMany()
     }
 
-    async getRates(types: string[], market: string) {
+    async getStockRates(types: string[], market: string) {
         const maxIds = await this.repository
             .createQueryBuilder("exchRates")
             .select("max(id) as id")

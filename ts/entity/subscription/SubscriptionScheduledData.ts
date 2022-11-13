@@ -1,5 +1,5 @@
 import {Column, Entity, OneToMany} from "typeorm";
-import {TimeUnit} from "./TimeUnit";
+import {TimeUnit} from "../TimeUnit";
 import {SubscriptionData} from "./SubscriptionData";
 
 @Entity('subsription_scheduled_data')

@@ -1,9 +1,9 @@
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
-import {SubscriptionData} from "../entity/SubscriptionData";
+import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
+import {SubscriptionData} from "../entity/subscription/SubscriptionData";
 import {Context, SessionFlavor} from "grammy";
 import {LocalUser} from "../entity/LocalUser";
 import {Conversation, ConversationFlavor} from "@grammyjs/conversations";
-import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
+import {GarantexSubscription} from "../entity/subscription/threshold/GarantexSubscription";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 
 

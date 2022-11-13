@@ -1,13 +1,15 @@
 import {CronJob} from 'cron';
-import {ThresholdNotificationService} from "./ThresholdNotificationService";
-import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
-import {ScheduledNotificationService} from "./ScheduledNotificationService";
-import {GarantexService} from "./GarantexService";
-import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
-import {UserCleanerService} from "./UserCleanerService";
+import {ThresholdNotificationService} from "../subscription/threshold/ThresholdNotificationService";
+import {GlobalMessageAnnouncerService} from "../GlobalMessageAnnouncerService";
+import {ScheduledNotificationService} from "../ScheduledNotificationService";
+import {GarantexService} from "../subscription/threshold/GarantexService";
+import {PaymentSubscriptionService} from "../PaymentSubscriptionService";
+import {UserCleanerService} from "../UserCleanerService";
 import {Service} from "typedi";
-import {BinanceService} from "./BinanceService";
-import {UnistreamService} from "./external/UnistreamService";
+import {BinanceService} from "../BinanceService";
+import {UnistreamService} from "../subscription/threshold/UnistreamService";
+import {SubscriptionService} from "../SubscriptionService";
+import {GlobalSubscriptionProcessor} from "../subscription/GlobalSubscriptionProcessor";
 
 @Service()
 export class CronJobService {
@@ -26,6 +28,8 @@ export class CronJobService {
     binanceService: BinanceService
     unistreamService: UnistreamService
 
+    globalSubscriptionProcessor: GlobalSubscriptionProcessor
+
     constructor(notificationService: ThresholdNotificationService,
                 messageAnnouncerService: GlobalMessageAnnouncerService,
                 paymentSubscriptionService: PaymentSubscriptionService,
@@ -33,7 +37,8 @@ export class CronJobService {
                 scheduledNotificationService: ScheduledNotificationService,
                 garantexService: GarantexService,
                 binanceService: BinanceService,
-                unistreamService: UnistreamService) {
+                unistreamService: UnistreamService,
+                globalSubscriptionProcessor: GlobalSubscriptionProcessor) {
         this.notificationService = notificationService;
 
         this.messageAnouncerService = messageAnnouncerService;
@@ -45,6 +50,8 @@ export class CronJobService {
         this.garantexService = garantexService;
         this.binanceService = binanceService;
         this.unistreamService = unistreamService;
+        this.globalSubscriptionProcessor = globalSubscriptionProcessor;
+
         this.everySecondJob = new CronJob('30 * * * * *', async () => {
             try {
                 await this.secondAction();
@@ -81,10 +88,12 @@ export class CronJobService {
 
     async secondAction(): Promise<void> {
         console.log("Call Garantex")
-        await this.garantexService.process()
+        await this.garantexService.requestAndSaveRate()
         await this.binanceService.getAndSaveRate()
         this.unistreamService.getAndSaveRates()
             .catch(console.error)
+
+        await this.globalSubscriptionProcessor.processSubscriptions()
 
         console.log("End Call Garantex")
     }
@@ -95,8 +104,6 @@ export class CronJobService {
 
         console.log("End Call Korona")
         await this.messageAnouncerService.persistMessage();
-        this.messageAnouncerService.globalMessageAnnounce()
-            .catch(console.error)
     }
 
     async hourAction(): Promise<void> {

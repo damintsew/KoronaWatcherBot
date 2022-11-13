@@ -1,5 +1,5 @@
 import {ds} from "../data-source";
-import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
+import {SubscriptionScheduledData} from "../entity/subscription/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment-timezone";
@@ -7,6 +7,7 @@ import {Service} from "typedi";
 import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
 import {LocalUser} from "../entity/LocalUser";
 import {ExchangeRatesService} from "./ExchangeRatesService";
+import e from "express";
 
 @Service()
 export class ScheduledNotificationService {
@@ -41,8 +42,10 @@ export class ScheduledNotificationService {
 
         let newValue: number;
         if (subscriptions.length > 0) {
-            // newValue = await KoronaDao.call(countryCode)
-            newValue = (await this.exchangeRatesService.getRate(countryCode, "KORONA"))?.value;
+            const rates = await this.exchangeRatesService.getRates(countryCode, "KORONA")
+            if (rates.length > 0) {
+                newValue = rates[0].value
+            }
         }
 
         await ds.transaction(async entityManager => {

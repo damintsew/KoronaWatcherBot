@@ -1,9 +1,10 @@
 import {ChildEntity, Column, Unique} from "typeorm";
-import {BaseSubscription} from "./BaseSubscription";
+import {BaseSubscription} from "../BaseSubscription";
+import {ThresholdSubscription} from "./ThresholdSubscription";
 
 @ChildEntity()
 @Unique("constraint_garantex_subscr", ["user", "market", "type"])
-export class GarantexSubscription extends BaseSubscription {
+export class GarantexSubscription extends BaseSubscription implements ThresholdSubscription {
 
     @Column({nullable: false, type: "float"})
     notificationThreshold: number

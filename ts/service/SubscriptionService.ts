@@ -1,30 +1,23 @@
-import {SubscriptionData} from "../entity/SubscriptionData";
+import {SubscriptionData} from "../entity/subscription/SubscriptionData";
 import {ds} from "../data-source";
-import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
+import {SubscriptionScheduledData} from "../entity/subscription/SubscriptionScheduledData";
+import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
 import {BaseSubscription} from "../entity/subscription/BaseSubscription";
 import {KoronaGarantexSpreadService} from "./subscription/KoronaGarantexSpreadService";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {EventProcessor} from "../events/EventProcessor";
-import {ThresholdNotificationService} from "./ThresholdNotificationService";
 import {Service} from "typedi";
+import {GarantexSubscription} from "../entity/subscription/threshold/GarantexSubscription";
+import {GarantexService} from "./subscription/threshold/GarantexService";
+import {UnistreamService} from "./subscription/threshold/UnistreamService";
+import {UnistreamThresholdSubscription} from "../entity/subscription/threshold/UnistreamThresholdSubscription";
 
 @Service()
 export class SubscriptionService {
 
-    private eventProcessor: EventProcessor
-    private spreadService: KoronaGarantexSpreadService
 
-    constructor(eventProcessor: EventProcessor, spreadService: KoronaGarantexSpreadService) {
-        this.eventProcessor = eventProcessor;
-        this.spreadService = spreadService;
-        const that = this
-        eventProcessor.subscribe({
-            onEvent(exchangeValue: ExchangeHistory) {
-                that.processSubs(exchangeValue)
-            }
-        })
+    constructor() {
     }
 
     async saveSubscription(subscriptionData: SubscriptionData):
@@ -59,7 +52,7 @@ export class SubscriptionService {
             .innerJoinAndSelect("getScheduledSubscriptions.user", "user")
             .innerJoinAndSelect("getScheduledSubscriptions.triggerTime", "trigger")
             .where("trigger.timeHours = :hour and country = :countryCode",
-            // .where("trigger.timeHours = :hour and country = :countryCode and user.deletionMark = false",
+                // .where("trigger.timeHours = :hour and country = :countryCode and user.deletionMark = false",
                 {hour: hour, countryCode: countryCode})
             .getMany();
     }
@@ -135,8 +128,12 @@ export class SubscriptionService {
             .getMany()
     }
 
-    async saveNewSubscription(subscriptionData: BaseSubscription): Promise<BaseSubscription> {
-        return ds.manager.save(subscriptionData)
+    // async saveNewSubscription(subscriptionData: BaseSubscription): Promise<BaseSubscription> {
+    //     return ds.manager.save(subscriptionData)
+    // }
+    //
+    async saveNewSubscription<T extends BaseSubscription>(subscriptionData: T): Promise<T> {
+        return ds.manager.save<T>(subscriptionData)
     }
 
     async removeBaseSubscription(subscriptionId: number) {
@@ -156,7 +153,7 @@ export class SubscriptionService {
             .where("user.userId = :userId", {userId: userId})
             .delete()
 
-         await ds.getRepository(SubscriptionScheduledData)
+        await ds.getRepository(SubscriptionScheduledData)
             .createQueryBuilder("s")
             .innerJoinAndSelect("s.user", "user")
             .where("user.userId = :userId", {userId: userId})
@@ -173,22 +170,17 @@ export class SubscriptionService {
             .getMany()
     }
 
-    update(subs: BaseSubscription) {
-        return ds.getRepository(BaseSubscription).save(subs)
+    // todo fix duplicate code
+    async getSubscriptions(): Promise<BaseSubscription[]> {
+        return ds.getRepository(BaseSubscription)
+            .createQueryBuilder("s")
+            .innerJoinAndSelect("s.user", "user")
+            .innerJoinAndSelect("user.subscriptions", "subscriptions")
+            .where("user.deletionMark = false")
+            .getMany()
     }
 
-    //todo move to DAO
-
-
-    async processSubs(exchangeRate: ExchangeHistory) {
-        let baseSubscriptions = await this.getSubscriptionsByType<KoronaGarantexSpreadSubscription>("SPREAD");
-        for (const subscription of baseSubscriptions) {
-            // todo move to service
-            if (exchangeRate.type == "KORONA") {
-                await this.spreadService.processReference(null, exchangeRate, subscription)
-            } else if (exchangeRate.type == "GARANTEX") {
-                await this.spreadService.processReference(exchangeRate, null, subscription)
-            }
-        }
+    update(subs: BaseSubscription) {
+        return ds.getRepository(BaseSubscription).save(subs)
     }
 }
