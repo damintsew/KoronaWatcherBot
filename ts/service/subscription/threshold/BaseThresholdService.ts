@@ -1,7 +1,7 @@
-import {ThresholdSubscription} from "../../entity/subscription/ThresholdSubscription";
-import {ExchangeHistory} from "../../entity/ExchangeHistory";
-import {SubscriptionService} from "../SubscriptionService";
-import {BaseSubscription} from "../../entity/subscription/BaseSubscription";
+import {ThresholdSubscription} from "../../../entity/subscription/threshold/ThresholdSubscription";
+import {ExchangeHistory} from "../../../entity/ExchangeHistory";
+import {SubscriptionService} from "../../SubscriptionService";
+import {BaseSubscription} from "../../../entity/subscription/BaseSubscription";
 
 export interface DifferenceResult {
     newValue?: number

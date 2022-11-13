@@ -86,10 +86,8 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         return spreads;
     }
 
-    async processReference(baseRate: ExchangeHistory, referenceRate: ExchangeHistory, subscription: KoronaGarantexSpreadSubscription) {
-        if (baseRate == null) {
-            baseRate = (await this.exchangeRatesService.rates(["GARANTEX"]))[0]
-        }
+    async processReference(subscription: KoronaGarantexSpreadSubscription) {
+        const baseRate = (await this.exchangeRatesService.rates(["GARANTEX"]))[0]
 
         subscription.referenceData = await ds.getRepository(SpreadReferenceData)
             .createQueryBuilder()
@@ -99,14 +97,7 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
             .getMany()
 
         for (const data of subscription.referenceData) {
-            if (referenceRate != null) {
-                if (data.country == referenceRate.country) {
-                    data.koronaLastNotifiedValue = referenceRate.value
-                }
-            }
-            if (data.koronaLastNotifiedValue == null) {
-                data.koronaLastNotifiedValue = (await this.exchangeRatesService.getSingleRate("KORONA", "USD", data.country))?.value
-            }
+            data.koronaLastNotifiedValue = (await this.exchangeRatesService.getSingleRate("KORONA", "USD", data.country))?.value
         }
         await ds.transaction(async entityManager => {
             await this.processReference1(entityManager, baseRate, subscription)

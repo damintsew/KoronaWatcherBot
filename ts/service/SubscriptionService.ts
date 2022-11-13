@@ -1,39 +1,23 @@
 import {SubscriptionData} from "../entity/SubscriptionData";
 import {ds} from "../data-source";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
+import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
 import {BaseSubscription} from "../entity/subscription/BaseSubscription";
 import {KoronaGarantexSpreadService} from "./subscription/KoronaGarantexSpreadService";
 import {ExchangeHistory} from "../entity/ExchangeHistory";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {EventProcessor} from "../events/EventProcessor";
 import {Service} from "typedi";
-import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
-import {GarantexService} from "./subscription/GarantexService";
-import {UnistreamService} from "./subscription/UnistreamService";
-import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
+import {GarantexSubscription} from "../entity/subscription/threshold/GarantexSubscription";
+import {GarantexService} from "./subscription/threshold/GarantexService";
+import {UnistreamService} from "./subscription/threshold/UnistreamService";
+import {UnistreamThresholdSubscription} from "../entity/subscription/threshold/UnistreamThresholdSubscription";
 
 @Service()
 export class SubscriptionService {
 
-    // private eventProcessor: EventProcessor
-    private spreadService: KoronaGarantexSpreadService
-    private garantexService: GarantexService
-    private unistreamService: UnistreamService
 
-    constructor(//eventProcessor: EventProcessor,
-                ) {
-        // this.eventProcessor = eventProcessor;
-        // this.spreadService = spreadService;
-        // this.garantexService = garService;
-        // this.unistreamService = unistreamService;
-
-        // const that = this
-        // eventProcessor.subscribe({
-        //     onEvent(exchangeValue: ExchangeHistory) {
-        //         that.processSubscriptions1(exchangeValue)
-        //     }
-        // })
+    constructor() {
     }
 
     async saveSubscription(subscriptionData: SubscriptionData):
@@ -199,22 +183,4 @@ export class SubscriptionService {
     update(subs: BaseSubscription) {
         return ds.getRepository(BaseSubscription).save(subs)
     }
-
-    //todo move to DAO
-
-
-    async processSubscriptions1(exchangeRate: ExchangeHistory) {
-        let baseSubscriptions = await this.getSubscriptionsByType<KoronaGarantexSpreadSubscription>("SPREAD");
-        for (const subscription of baseSubscriptions) {
-            // todo move to service
-            if (exchangeRate.type == "KORONA") {
-                await this.spreadService.processReference(null, exchangeRate, subscription)
-            } else if (exchangeRate.type == "GARANTEX") {
-                await this.spreadService.processReference(exchangeRate, null, subscription)
-            }
-        }
-
-    }
-
-
 }

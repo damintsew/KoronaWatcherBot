@@ -1,12 +1,12 @@
 import {Service} from "typedi";
-import {UnistreamDao} from "../../dao/rest/UnistreamDao";
-import {countries, findCountryByCode, mapCountryToFlag} from "../FlagUtilities";
-import {ExchangeRatesService} from "../ExchangeRatesService";
+import {UnistreamDao} from "../../../dao/rest/UnistreamDao";
+import {countries, findCountryByCode, mapCountryToFlag} from "../../FlagUtilities";
+import {ExchangeRatesService} from "../../ExchangeRatesService";
 import {BaseThresholdService, DifferenceResult} from "./BaseThresholdService";
-import {SubscriptionTextSupport} from "./SubscriptionTextSupport";
-import {UnistreamThresholdSubscription} from "../../entity/subscription/UnistreamThresholdSubscription";
-import {GlobalMessageAnnouncerService} from "../GlobalMessageAnnouncerService";
-import {SubscriptionService} from "../SubscriptionService";
+import {SubscriptionTextSupport} from "../SubscriptionTextSupport";
+import {UnistreamThresholdSubscription} from "../../../entity/subscription/threshold/UnistreamThresholdSubscription";
+import {GlobalMessageAnnouncerService} from "../../GlobalMessageAnnouncerService";
+import {SubscriptionService} from "../../SubscriptionService";
 
 
 @Service()

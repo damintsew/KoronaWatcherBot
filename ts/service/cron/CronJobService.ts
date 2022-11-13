@@ -1,13 +1,13 @@
 import {CronJob} from 'cron';
-import {ThresholdNotificationService} from "../ThresholdNotificationService";
+import {ThresholdNotificationService} from "../subscription/threshold/ThresholdNotificationService";
 import {GlobalMessageAnnouncerService} from "../GlobalMessageAnnouncerService";
 import {ScheduledNotificationService} from "../ScheduledNotificationService";
-import {GarantexService} from "../subscription/GarantexService";
+import {GarantexService} from "../subscription/threshold/GarantexService";
 import {PaymentSubscriptionService} from "../PaymentSubscriptionService";
 import {UserCleanerService} from "../UserCleanerService";
 import {Service} from "typedi";
 import {BinanceService} from "../BinanceService";
-import {UnistreamService} from "../subscription/UnistreamService";
+import {UnistreamService} from "../subscription/threshold/UnistreamService";
 import {SubscriptionService} from "../SubscriptionService";
 import {GlobalSubscriptionProcessor} from "../subscription/GlobalSubscriptionProcessor";
 

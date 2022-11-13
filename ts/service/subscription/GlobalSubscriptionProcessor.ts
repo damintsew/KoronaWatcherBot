@@ -1,10 +1,11 @@
-import {GarantexSubscription} from "../../entity/subscription/GarantexSubscription";
-import {UnistreamThresholdSubscription} from "../../entity/subscription/UnistreamThresholdSubscription";
+import {GarantexSubscription} from "../../entity/subscription/threshold/GarantexSubscription";
+import {UnistreamThresholdSubscription} from "../../entity/subscription/threshold/UnistreamThresholdSubscription";
 import {KoronaGarantexSpreadService} from "./KoronaGarantexSpreadService";
-import {GarantexService} from "./GarantexService";
-import {UnistreamService} from "./UnistreamService";
+import {GarantexService} from "./threshold/GarantexService";
+import {UnistreamService} from "./threshold/UnistreamService";
 import {SubscriptionService} from "../SubscriptionService";
 import {Service} from "typedi";
+import {KoronaGarantexSpreadSubscription} from "../../entity/subscription/KoronaGarantexSpreadSubscription";
 
 @Service()
 export class GlobalSubscriptionProcessor {
@@ -32,6 +33,9 @@ export class GlobalSubscriptionProcessor {
             }
             if (subscription instanceof UnistreamThresholdSubscription) {
                 await this.unistreamService.process(subscription)
+            }
+            if (subscription instanceof KoronaGarantexSpreadSubscription) {
+                await this.spreadService.processReference(subscription)
             }
         }
     }

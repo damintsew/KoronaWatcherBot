@@ -1,12 +1,12 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {countries} from "../service/FlagUtilities";
 import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
-import {SubscriptionThresholdData} from "../entity/SubscriptionThresholdData";
+import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {NewContext} from "../bot_config/Domain";
 import {Container} from "typedi";
 import {SubscriptionService} from "../service/SubscriptionService";
-import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
+import {UnistreamThresholdSubscription} from "../entity/subscription/threshold/UnistreamThresholdSubscription";
 
 /** This is how the dishes look that this bot is managing */
 interface TimeButton { //todo rename

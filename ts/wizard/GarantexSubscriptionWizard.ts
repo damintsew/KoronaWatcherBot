@@ -1,6 +1,6 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {MyConversation, NewContext} from "../bot_config/Domain";
-import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
+import {GarantexSubscription} from "../entity/subscription/threshold/GarantexSubscription";
 import {QueryFailedError} from "typeorm";
 import {Container} from "typedi";
 import {PaymentValidationWizard} from "./PaymentValidationWizard";

@@ -1,4 +1,4 @@
-import {LocalUser} from "../LocalUser";
+import {LocalUser} from "../../LocalUser";
 
 export interface ThresholdSubscription {
 

@@ -1,15 +1,15 @@
-import {ExchangeRatesDao} from "../../dao/ExchangeRatesDao";
-import {GarantexDao} from "../../dao/rest/GarantexDao";
-import {ExchangeHistory} from "../../entity/ExchangeHistory";
-import {GarantexSubscription} from "../../entity/subscription/GarantexSubscription";
-import {PaymentSubscriptionService} from "../PaymentSubscriptionService";
+import {ExchangeRatesDao} from "../../../dao/ExchangeRatesDao";
+import {GarantexDao} from "../../../dao/rest/GarantexDao";
+import {ExchangeHistory} from "../../../entity/ExchangeHistory";
+import {GarantexSubscription} from "../../../entity/subscription/threshold/GarantexSubscription";
+import {PaymentSubscriptionService} from "../../PaymentSubscriptionService";
 import {Service} from "typedi";
-import {GlobalMessageAnnouncerService} from "../GlobalMessageAnnouncerService";
-import {LocalUser} from "../../entity/LocalUser";
+import {GlobalMessageAnnouncerService} from "../../GlobalMessageAnnouncerService";
+import {LocalUser} from "../../../entity/LocalUser";
 import {BaseThresholdService, DifferenceResult} from "./BaseThresholdService";
-import {ExchangeRatesService} from "../ExchangeRatesService";
-import {SubscriptionTextSupport} from "./SubscriptionTextSupport";
-import {SubscriptionService} from "../SubscriptionService";
+import {ExchangeRatesService} from "../../ExchangeRatesService";
+import {SubscriptionTextSupport} from "../SubscriptionTextSupport";
+import {SubscriptionService} from "../../SubscriptionService";
 
 @Service()
 export class GarantexService extends BaseThresholdService<GarantexSubscription>
