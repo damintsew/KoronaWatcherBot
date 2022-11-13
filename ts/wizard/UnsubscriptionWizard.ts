@@ -112,7 +112,7 @@ function formatTextMessage(s: BaseSubscription) {
         return unistreamService.getText(s)
     }
     if (s instanceof KoronaGarantexSpreadSubscription) {
-        return koronaGarantexSpreadService.formatTextMessage(s)
+        return koronaGarantexSpreadService.getText(s)
     }
 }
 
@@ -124,7 +124,7 @@ function formatButtonText(s: BaseSubscription) {
         return unistreamService.getButtonText(s)
     }
     if (s instanceof KoronaGarantexSpreadSubscription) {
-        return koronaGarantexSpreadService.formatButtonText(s)
+        return koronaGarantexSpreadService.getButtonText(s)
     }
 }
 
@@ -149,9 +149,9 @@ async function formatUnsubscribeText(userId: number) {
     if (paymentSubs.length > 0) {
         messages.push("", "Платные подписки:")
         for (let paym of paymentSubs) {
-            let msg = `${paym.type}, заканчивается ${moment(paym.expirationDate).format("DD.MM.YYY HH:ss")}`
+            let msg = `${paym.type}, заканчивается ${moment(paym.expirationDate).format("DD.MM.YYYY")}`
             if (paym.trial) {
-                msg += " Триальная подписка"
+                msg += " (триальная подписка)"
             }
             messages.push(msg)
         }

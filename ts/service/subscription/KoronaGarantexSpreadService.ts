@@ -12,9 +12,11 @@ import {GlobalMessageAnnouncerService} from "../GlobalMessageAnnouncerService";
 import {LocalUser} from "../../entity/LocalUser";
 import Handlebars from "handlebars";
 import {EntityManager} from "typeorm";
+import {SubscriptionTextSupport} from "./SubscriptionTextSupport";
 
 @Service()
-export class KoronaGarantexSpreadService extends SpreadBaseService {
+export class KoronaGarantexSpreadService extends SpreadBaseService implements
+    SubscriptionTextSupport<KoronaGarantexSpreadSubscription>{
 
     private source = "" +
         "{{#if subscription}}Подписка на достижение значения в {{subscription.notificationThreshold}} %\n{{/if}}" +
@@ -173,7 +175,19 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
         return (baseVal - relativeVal) / baseVal * 100;
     }
 
-    formatTextMessage(subscription: KoronaGarantexSpreadSubscription) {
+    getButtonText(subscription: KoronaGarantexSpreadSubscription) {
+        let message = `Spread: `;
+        if (subscription.changeType == "SPREAD_CHANGE") {
+            message += `изменение значения `
+        } else {
+            message += `достижение значения `
+        }
+        message += `${subscription.notificationThreshold}`
+
+        return message
+    }
+
+    getText(subscription: KoronaGarantexSpreadSubscription) {
         let message = `Spread: `;
         if (subscription.changeType == "SPREAD_CHANGE") {
             message += `подписка на изменение значение на `
@@ -181,18 +195,6 @@ export class KoronaGarantexSpreadService extends SpreadBaseService {
             message += `подписка на достижение значения в `
         }
         message += `${subscription.notificationThreshold} %`
-
-        return message
-    }
-
-    formatButtonText(subscription: KoronaGarantexSpreadSubscription) {
-        let message = `Spread: `;
-        if (subscription.changeType == "SPREAD_CHANGE") {
-            message += `изменение значения`
-        } else {
-            message += `достижение значения `
-        }
-        message += `${subscription.notificationThreshold}`
 
         return message
     }
