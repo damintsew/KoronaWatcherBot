@@ -1,9 +1,9 @@
-import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
-import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
-import {KoronaGarantexSpreadService} from "./subscription/KoronaGarantexSpreadService";
-import {GarantexService} from "./subscription/GarantexService";
-import {UnistreamService} from "./external/UnistreamService";
-import {SubscriptionService} from "./SubscriptionService";
+import {GarantexSubscription} from "../../entity/subscription/GarantexSubscription";
+import {UnistreamThresholdSubscription} from "../../entity/subscription/UnistreamThresholdSubscription";
+import {KoronaGarantexSpreadService} from "./KoronaGarantexSpreadService";
+import {GarantexService} from "./GarantexService";
+import {UnistreamService} from "./UnistreamService";
+import {SubscriptionService} from "../SubscriptionService";
 import {Service} from "typedi";
 
 @Service()

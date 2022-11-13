@@ -10,7 +10,7 @@ import {EventProcessor} from "../events/EventProcessor";
 import {Service} from "typedi";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
 import {GarantexService} from "./subscription/GarantexService";
-import {UnistreamService} from "./external/UnistreamService";
+import {UnistreamService} from "./subscription/UnistreamService";
 import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
 
 @Service()

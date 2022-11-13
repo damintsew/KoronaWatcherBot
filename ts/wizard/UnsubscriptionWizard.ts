@@ -14,7 +14,7 @@ import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGar
 import {KoronaGarantexSpreadService} from "../service/subscription/KoronaGarantexSpreadService";
 import {GarantexService} from "../service/subscription/GarantexService";
 import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
-import {UnistreamService} from "../service/external/UnistreamService";
+import {UnistreamService} from "../service/subscription/UnistreamService";
 
 const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
 const subscriptionService = Container.get(SubscriptionService);

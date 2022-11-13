@@ -1,15 +1,15 @@
 import {CronJob} from 'cron';
-import {ThresholdNotificationService} from "./ThresholdNotificationService";
-import {GlobalMessageAnnouncerService} from "./GlobalMessageAnnouncerService";
-import {ScheduledNotificationService} from "./ScheduledNotificationService";
-import {GarantexService} from "./subscription/GarantexService";
-import {PaymentSubscriptionService} from "./PaymentSubscriptionService";
-import {UserCleanerService} from "./UserCleanerService";
+import {ThresholdNotificationService} from "../ThresholdNotificationService";
+import {GlobalMessageAnnouncerService} from "../GlobalMessageAnnouncerService";
+import {ScheduledNotificationService} from "../ScheduledNotificationService";
+import {GarantexService} from "../subscription/GarantexService";
+import {PaymentSubscriptionService} from "../PaymentSubscriptionService";
+import {UserCleanerService} from "../UserCleanerService";
 import {Service} from "typedi";
-import {BinanceService} from "./BinanceService";
-import {UnistreamService} from "./external/UnistreamService";
-import {SubscriptionService} from "./SubscriptionService";
-import {GlobalSubscriptionProcessor} from "./GlobalSubscriptionProcessor";
+import {BinanceService} from "../BinanceService";
+import {UnistreamService} from "../subscription/UnistreamService";
+import {SubscriptionService} from "../SubscriptionService";
+import {GlobalSubscriptionProcessor} from "../subscription/GlobalSubscriptionProcessor";
 
 @Service()
 export class CronJobService {
