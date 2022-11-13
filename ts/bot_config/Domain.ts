@@ -1,5 +1,5 @@
 import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
-import {SubscriptionData} from "../entity/SubscriptionData";
+import {SubscriptionData} from "../entity/subscription/SubscriptionData";
 import {Context, SessionFlavor} from "grammy";
 import {LocalUser} from "../entity/LocalUser";
 import {Conversation, ConversationFlavor} from "@grammyjs/conversations";

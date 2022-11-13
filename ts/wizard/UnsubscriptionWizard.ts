@@ -2,7 +2,7 @@ import {Menu, MenuRange} from "@grammyjs/menu";
 import {NewContext} from "../bot_config/Domain";
 import {findCountryByCode} from "../service/FlagUtilities";
 import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
-import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
+import {SubscriptionScheduledData} from "../entity/subscription/SubscriptionScheduledData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {BaseSubscription} from "../entity/subscription/BaseSubscription";
 import {GarantexSubscription} from "../entity/subscription/threshold/GarantexSubscription";

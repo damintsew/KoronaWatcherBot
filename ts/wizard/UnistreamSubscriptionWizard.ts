@@ -1,6 +1,6 @@
 import {Menu, MenuRange} from "@grammyjs/menu";
 import {countries} from "../service/FlagUtilities";
-import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
+import {SubscriptionScheduledData} from "../entity/subscription/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "../entity/subscription/threshold/SubscriptionThresholdData";
 import {TimeUnit} from "../entity/TimeUnit";
 import {NewContext} from "../bot_config/Domain";

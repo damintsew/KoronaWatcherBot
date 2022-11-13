@@ -1,5 +1,5 @@
 import {ds} from "../data-source";
-import {SubscriptionScheduledData} from "../entity/SubscriptionScheduledData";
+import {SubscriptionScheduledData} from "../entity/subscription/SubscriptionScheduledData";
 import {SubscriptionService} from "./SubscriptionService";
 import {countries, mapCountryToFlag} from "./FlagUtilities";
 import moment from "moment-timezone";

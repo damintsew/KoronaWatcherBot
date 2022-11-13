@@ -3,7 +3,7 @@ import {LocalUser} from "./entity/LocalUser";
 import {env} from 'node:process';
 import {Announcements} from "./entity/Announcements";
 import {TimeUnit} from "./entity/TimeUnit";
-import {SubscriptionScheduledData} from "./entity/SubscriptionScheduledData";
+import {SubscriptionScheduledData} from "./entity/subscription/SubscriptionScheduledData";
 import {SubscriptionThresholdData} from "./entity/subscription/threshold/SubscriptionThresholdData";
 import {ExchangeHistory} from "./entity/ExchangeHistory";
 import {SendToUser} from "./entity/announcement/SendToUser";
