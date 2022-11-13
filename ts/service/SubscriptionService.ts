@@ -10,27 +10,30 @@ import {EventProcessor} from "../events/EventProcessor";
 import {Service} from "typedi";
 import {GarantexSubscription} from "../entity/subscription/GarantexSubscription";
 import {GarantexService} from "./subscription/GarantexService";
+import {UnistreamService} from "./external/UnistreamService";
+import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
 
 @Service()
 export class SubscriptionService {
 
-    private eventProcessor: EventProcessor
+    // private eventProcessor: EventProcessor
     private spreadService: KoronaGarantexSpreadService
     private garantexService: GarantexService
+    private unistreamService: UnistreamService
 
-    constructor(eventProcessor: EventProcessor,
-                spreadService: KoronaGarantexSpreadService,
-                garService: GarantexService) {
-        this.eventProcessor = eventProcessor;
-        this.spreadService = spreadService;
-        this.garantexService = garService;
+    constructor(//eventProcessor: EventProcessor,
+                ) {
+        // this.eventProcessor = eventProcessor;
+        // this.spreadService = spreadService;
+        // this.garantexService = garService;
+        // this.unistreamService = unistreamService;
 
-        const that = this
-        eventProcessor.subscribe({
-            onEvent(exchangeValue: ExchangeHistory) {
-                that.processSubscriptions1(exchangeValue)
-            }
-        })
+        // const that = this
+        // eventProcessor.subscribe({
+        //     onEvent(exchangeValue: ExchangeHistory) {
+        //         that.processSubscriptions1(exchangeValue)
+        //     }
+        // })
     }
 
     async saveSubscription(subscriptionData: SubscriptionData):
@@ -141,8 +144,12 @@ export class SubscriptionService {
             .getMany()
     }
 
-    async saveNewSubscription(subscriptionData: BaseSubscription): Promise<BaseSubscription> {
-        return ds.manager.save(subscriptionData)
+    // async saveNewSubscription(subscriptionData: BaseSubscription): Promise<BaseSubscription> {
+    //     return ds.manager.save(subscriptionData)
+    // }
+    //
+    async saveNewSubscription<T extends BaseSubscription>(subscriptionData: T): Promise<T> {
+        return ds.manager.save<T>(subscriptionData)
     }
 
     async removeBaseSubscription(subscriptionId: number) {
@@ -209,12 +216,5 @@ export class SubscriptionService {
 
     }
 
-    async processSubscriptions() {
-        const baseSubscriptions = await this.getSubscriptions()
-        for (const subscription of baseSubscriptions) {
-            if (subscription instanceof GarantexSubscription) {
-                await this.garantexService.process(subscription)
-            }
-        }
-    }
+
 }

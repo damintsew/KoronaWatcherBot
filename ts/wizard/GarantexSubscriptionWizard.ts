@@ -80,7 +80,7 @@ function createDishMenu(text: string, payload: string) {
                 }
                 await ctx.editMessageText(message)
                 if (success) {
-                    await ctx.reply("Подписка успешно сохранена")
+                    await ctx.reply("Подписка успешно сохранена", {reply_markup: {remove_keyboard: true}})
                 }
                 return ctx.menu.close()
             }

@@ -27,7 +27,8 @@ async function spreadConversation(conversation: MyConversation, ctx: NewContext)
         startNewSubscription: async (ctx: NewContext) => {
             await ctx.reply("Каким образом уведомлять?\n" +
                 "  При изменени значения спреда: например изменился спред на 0.25%\n" +
-                "  При достижении определенного занчения: например когда спред стал 1.5%\n", {reply_markup: spreadSubscriptionMenu})
+                "  При достижении определенного занчения: например когда спред стал 1.5%\n",
+                {reply_markup: spreadSubscriptionMenu})
         }
     })
 }
@@ -148,7 +149,7 @@ function createDishMenu(text: string, payload: string, changeType: string) {
 
                 await ctx.editMessageText(message)
                 if (success) {
-                    await ctx.reply("Подписка успешно сохранена")
+                    await ctx.reply("Подписка успешно сохранена", {reply_markup: {remove_keyboard: true}})
                 }
                 return ctx.menu.close()
             }

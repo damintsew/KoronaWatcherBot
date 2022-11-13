@@ -15,6 +15,7 @@ import {KoronaGarantexSpreadSubscription} from "./entity/subscription/KoronaGara
 import {SpreadReferenceData} from "./entity/subscription/SpreadReferenceData";
 import {PendingTxId} from "./entity/PendingTxId";
 import {PaymentSubscriptionNotification} from "./entity/PaymentSubscriptionNotification";
+import {UnistreamThresholdSubscription} from "./entity/subscription/UnistreamThresholdSubscription";
 
 export const ds = new DataSource({
     type: "postgres",
@@ -26,7 +27,7 @@ export const ds = new DataSource({
     entities: [
         LocalUser, SubscriptionScheduledData, SubscriptionThresholdData, Announcements, TimeUnit, ExchangeHistory,
         SendToUser, PaymentSubscription, PaymentSubscriptionNotification,
-        BaseSubscription, GarantexSubscription, KoronaGarantexSpreadSubscription, SpreadReferenceData,
+        BaseSubscription, GarantexSubscription, UnistreamThresholdSubscription, KoronaGarantexSpreadSubscription, SpreadReferenceData,
         Statistic,
         PendingTxId
     ],

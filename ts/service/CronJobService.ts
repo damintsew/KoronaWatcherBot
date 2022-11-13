@@ -9,6 +9,7 @@ import {Service} from "typedi";
 import {BinanceService} from "./BinanceService";
 import {UnistreamService} from "./external/UnistreamService";
 import {SubscriptionService} from "./SubscriptionService";
+import {GlobalSubscriptionProcessor} from "./GlobalSubscriptionProcessor";
 
 @Service()
 export class CronJobService {
@@ -27,7 +28,7 @@ export class CronJobService {
     binanceService: BinanceService
     unistreamService: UnistreamService
 
-    subscriptionService: SubscriptionService
+    globalSubscriptionProcessor: GlobalSubscriptionProcessor
 
     constructor(notificationService: ThresholdNotificationService,
                 messageAnnouncerService: GlobalMessageAnnouncerService,
@@ -37,7 +38,7 @@ export class CronJobService {
                 garantexService: GarantexService,
                 binanceService: BinanceService,
                 unistreamService: UnistreamService,
-                subscriptionService: SubscriptionService) {
+                globalSubscriptionProcessor: GlobalSubscriptionProcessor) {
         this.notificationService = notificationService;
 
         this.messageAnouncerService = messageAnnouncerService;
@@ -49,7 +50,7 @@ export class CronJobService {
         this.garantexService = garantexService;
         this.binanceService = binanceService;
         this.unistreamService = unistreamService;
-        this.subscriptionService = subscriptionService;
+        this.globalSubscriptionProcessor = globalSubscriptionProcessor;
 
         this.everySecondJob = new CronJob('30 * * * * *', async () => {
             try {
@@ -92,7 +93,7 @@ export class CronJobService {
         this.unistreamService.getAndSaveRates()
             .catch(console.error)
 
-        await this.subscriptionService.processSubscriptions()
+        await this.globalSubscriptionProcessor.processSubscriptions()
 
         console.log("End Call Garantex")
     }

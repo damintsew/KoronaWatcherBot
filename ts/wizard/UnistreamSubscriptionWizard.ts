@@ -6,6 +6,7 @@ import {TimeUnit} from "../entity/TimeUnit";
 import {NewContext} from "../bot_config/Domain";
 import {Container} from "typedi";
 import {SubscriptionService} from "../service/SubscriptionService";
+import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
 
 /** This is how the dishes look that this bot is managing */
 interface TimeButton { //todo rename
@@ -16,20 +17,18 @@ interface TimeButton { //todo rename
 
 const subscriptionService = Container.get(SubscriptionService);
 
-const koronaSubscriptionMenu = new Menu<NewContext>('korona-subscription-menu')
-koronaSubscriptionMenu.dynamic(() => {
+const unistreamSubscriptionMenu = new Menu<NewContext>('unistram-subscription-menu')
+unistreamSubscriptionMenu.dynamic(() => {
     const range = new MenuRange<NewContext>()
     for (const country of countries) {
         range
             .submenu(
                 {text: `${country.flag} ${country.text}`, payload: country.code},
-                'subscription-type',
+                'unistream-subscription-type',
                 ctx => {
                     ctx.session.country = ctx.match
                     ctx.session.message = `Создание новой подписки:\n\n${country.flag} ${country.text}`
-                    return ctx.editMessageText(ctx.session.message, {
-                        parse_mode: 'HTML',
-                    })
+                    return ctx.editMessageText(ctx.session.message)
                 }
             )
             .row()
@@ -37,46 +36,44 @@ koronaSubscriptionMenu.dynamic(() => {
     return range
 })
 
-const dishMenu = new Menu<NewContext>('subscription-type')
+const dishMenu = new Menu<NewContext>('unistream-subscription-type')
 dishMenu.dynamic(_ctx => {
 
     const range = new MenuRange<NewContext>()
-    range.submenu(
-        {text: "По времени", payload: "time"},
-        "time-subscription",
-        ctx => {
-            const subscription = new SubscriptionScheduledData()
-            subscription.country = ctx.session.country
-            ctx.session.subscriptionData = subscription
-            ctx.session.selectedSubscriptionButtons = createButtonsConfig()
-
-            ctx.session.message += "\nУведомление по часам:"
-
-            return ctx.editMessageText(ctx.session.message, {
-                parse_mode: 'HTML',
-            })
-        }
-    )
+    // range.submenu(
+    //     {text: "По времени", payload: "time"},
+    //     "unistream-time-subscription",
+    //     ctx => {
+    //         const subscription = new SubscriptionScheduledData()
+    //         subscription.country = ctx.session.country
+    //         ctx.session.subscriptionData = subscription
+    //         ctx.session.selectedSubscriptionButtons = createButtonsConfig()
+    //
+    //         ctx.session.message += "\nУведомление по часам:"
+    //
+    //         return ctx.editMessageText(ctx.session.message, {
+    //             parse_mode: 'HTML',
+    //         })
+    //     }
+    // )
     range.submenu(
         {text: "По изменению цены", payload: "threshold"},
-        "threshold-subscription",
+        "unistream-threshold-subscription",
         ctx => {
-            const subscription = new SubscriptionThresholdData()
+            const subscription = new UnistreamThresholdSubscription()
             subscription.country = ctx.session.country
             ctx.session.subscriptionData = subscription
 
             ctx.session.message += "\nИзменение по пороговому значению:"
 
-            return ctx.editMessageText(ctx.session.message, {
-                parse_mode: 'HTML',
-            })
+            return ctx.editMessageText(ctx.session.message)
         }
     )
 
     return range
 })
 
-const threshHoldMenu = new Menu<NewContext>('threshold-subscription')
+const threshHoldMenu = new Menu<NewContext>('unistream-threshold-subscription')
 threshHoldMenu.dynamic(_ctx => {
 
     const range = new MenuRange<NewContext>()
@@ -95,7 +92,7 @@ threshHoldMenu.dynamic(_ctx => {
     return range
 })
 
-const scheduledMenu = new Menu<NewContext>('time-subscription')
+const scheduledMenu = new Menu<NewContext>('unistream-time-subscription')
 scheduledMenu.dynamic(ctx => {
 
     const range = new MenuRange<NewContext>()
@@ -132,7 +129,7 @@ scheduledMenu.dynamic(ctx => {
                                 })
 
                             subscriptionData.user = ctx.user
-                            subscriptionData.type = "KORONA"
+                            subscriptionData.type = "UNISTREAM"
 
                             console.log(subscriptionData)
                             await subscriptionService.saveSubscription(subscriptionData)
@@ -154,22 +151,20 @@ function createDishMenu(text: string, payload: string) {
         .text(
             {text: text, payload: payload},
             async ctx => {
-                if (ctx.session.subscriptionData instanceof SubscriptionThresholdData) {
+                if (ctx.session.subscriptionData instanceof UnistreamThresholdSubscription) {
                     ctx.session.subscriptionData.notificationThreshold = Number.parseInt(ctx.match)
 
                     ctx.session.subscriptionData.user = ctx.user
-                    ctx.session.subscriptionData.type = "KORONA"
+                    ctx.session.subscriptionData.type = "UNISTREAM"
 
 
                     ctx.session.message += " " + text
 
-                    await ctx.editMessageText(ctx.session.message, {
-                        parse_mode: 'HTML',
-                    })
+                    await ctx.editMessageText(ctx.session.message)
                     console.log(ctx.session.subscriptionData)
-                    await subscriptionService.saveSubscription(ctx.session.subscriptionData)
+                    await subscriptionService.saveNewSubscription(ctx.session.subscriptionData)
                 }
-                await ctx.reply("Подписка успешно сохранена")
+                await ctx.reply("Подписка успешно сохранена", {reply_markup: {remove_keyboard: true}})
                 return ctx.menu.close()
             }
         )
@@ -211,8 +206,8 @@ let createButtonsConfig = () => {
     };
 }
 
-koronaSubscriptionMenu.register(dishMenu)
-koronaSubscriptionMenu.register(threshHoldMenu)
-koronaSubscriptionMenu.register(scheduledMenu)
+unistreamSubscriptionMenu.register(dishMenu)
+unistreamSubscriptionMenu.register(threshHoldMenu)
+unistreamSubscriptionMenu.register(scheduledMenu)
 
-export {koronaSubscriptionMenu}
+export {unistreamSubscriptionMenu}

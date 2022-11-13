@@ -12,10 +12,16 @@ import moment from "moment";
 import {SubscriptionService} from "../service/SubscriptionService";
 import {KoronaGarantexSpreadSubscription} from "../entity/subscription/KoronaGarantexSpreadSubscription";
 import {KoronaGarantexSpreadService} from "../service/subscription/KoronaGarantexSpreadService";
+import {GarantexService} from "../service/subscription/GarantexService";
+import {UnistreamThresholdSubscription} from "../entity/subscription/UnistreamThresholdSubscription";
+import {UnistreamService} from "../service/external/UnistreamService";
 
 const paymentSubscriptionService = Container.get(PaymentSubscriptionService)
 const subscriptionService = Container.get(SubscriptionService);
+
 const koronaGarantexSpreadService = Container.get(KoronaGarantexSpreadService)
+const garantexService = Container.get(GarantexService)
+const unistreamService = Container.get(UnistreamService)
 
 const unsubscribeMenu = new Menu<NewContext>('unsubscription-wizard')
 unsubscribeMenu.dynamic(async (ctx) => {
@@ -100,7 +106,10 @@ function newButton(subscription: BaseSubscription) {
 
 function formatTextMessage(s: BaseSubscription) {
     if (s instanceof GarantexSubscription) {
-        return `Garantex: ${s.market} уведомлять при изменении на ${s.notificationThreshold}`
+        return garantexService.getText(s)
+    }
+    if (s instanceof UnistreamThresholdSubscription) {
+        return unistreamService.getText(s)
     }
     if (s instanceof KoronaGarantexSpreadSubscription) {
         return koronaGarantexSpreadService.formatTextMessage(s)
@@ -109,7 +118,10 @@ function formatTextMessage(s: BaseSubscription) {
 
 function formatButtonText(s: BaseSubscription) {
     if (s instanceof GarantexSubscription) {
-        return `Garantex: ${s.market} изменение на ${s.notificationThreshold}`
+        return garantexService.getButtonText(s)
+    }
+    if (s instanceof UnistreamThresholdSubscription) {
+        return unistreamService.getButtonText(s)
     }
     if (s instanceof KoronaGarantexSpreadSubscription) {
         return koronaGarantexSpreadService.formatButtonText(s)
