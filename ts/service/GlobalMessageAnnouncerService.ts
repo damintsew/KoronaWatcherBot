@@ -71,7 +71,7 @@ export class GlobalMessageAnnouncerService {
     }
 
     async persistMessage() {
-        const messageId = 34;
+        const messageId = 36;
         let existingMgs
         try {
             existingMgs = await ds.manager.findOne(Announcements, {where: {messageId: messageId}});
@@ -88,9 +88,8 @@ export class GlobalMessageAnnouncerService {
         announsment.isSent = false;
         announsment.timeToSent = new Date('14 Nov 2022 09:59:00 GMT+0300');
         announsment.text = "Друзья! \n\n" +
-            "Добавлен сервис Unistream!\n" +
-            "Можно подписываться на изменение курса Unistream /subscribe\n" +
-            "В разработке рассчет спредов и подписка на курс для Unistream + Binance!\n" +
+            "В Боте сломался рассчет спредов!\n" +
+            "В скором времени будет исправлено. Триальный период будет пролонгирован!\n" +
             "Всем спасибо!🕊🕊🕊\n\n" +
             "По проблемам, вопросам и предложениям по работе бота - пишите в группу https://t.me/KoronaWatcherSupportBot ";
         try {
